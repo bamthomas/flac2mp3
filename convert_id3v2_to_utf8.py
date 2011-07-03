@@ -20,7 +20,7 @@ class TextFrameWithUtf8Encoding(Frame):
 
 tag.link(sys.argv[1])
 
-for i in range(1, len(tag.frames)):
+for i in range(0, len(tag.frames)):
 	frame=tag.frames[i];
 	if frame.__class__ == TextFrame:
 		tag.frames[i] = TextFrameWithUtf8Encoding(frame);
