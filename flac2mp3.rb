@@ -1,5 +1,18 @@
 #!/usr/bin/ruby
-#
+
+require 'find'
+require 'set'
+
+def trouveRepertoires(repertoires_racines) 
+	repertoires = Set.new
+	Find.find(repertoires_racines) do |path| 
+		if File.file?(path) && path.end_with?(".flac") 
+			repertoires << File.dirname(path)
+		end
+	end
+	return repertoires
+end
+
 def litMetaFlac(texte)
 	metadonnees = Hash[*texte.split(/=|\n/).flatten]
 	metadonnees.each {|key, value|
@@ -19,7 +32,7 @@ def flac2mp3(nom_fichier)
 	titre = metaflac["TITLE"]
 	genre = metaflac["GENRE"]
 	date = metaflac["DATE"]
-	if (date.include? "-")
+	if date.include? "-"
 		date = date.split('-')[0]
 	end
 	puts "flac -dcs #{nom_fichier} | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - #{nom_fichier_mp3} && eyeD3  -a #{artiste} -n #{plage} -A #{album} -t #{titre} --add-image=cover.jpg:FRONT_COVER: -G #{genre} -Y #{date} --set-encoding=utf8 #{nom_fichier_mp3}"

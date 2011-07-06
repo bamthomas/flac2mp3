@@ -39,4 +39,12 @@ class Flac2mp3Test < Test::Unit::TestCase
 	def testFlac2mp3_fichierInexistant
 		assert_raise(RuntimeError) {flac2mp3("fichier_inexistant.flac")}
 	end
+	
+	def testLitRepertoiresContenantFichiersFlac
+		`mkdir -p test/r1 test/r2/r21 test/r3`
+		`touch test/r1/f11.flac test/r1/f12.flac test/r2/r21/f21.flac`
+		set_attendu = Set.new << "./test/r1" << "./test/r2/r21"
+		assert_equal(set_attendu,  trouveRepertoires("."))
+		`rm -rf test`
+	end
 end
