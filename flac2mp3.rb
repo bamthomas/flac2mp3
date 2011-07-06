@@ -3,11 +3,11 @@
 require 'find'
 require 'set'
 
-def trouveRepertoires(repertoires_racines) 
+def trouveFlac(*repertoires_racines) 
 	repertoires = Set.new
-	Find.find(repertoires_racines) do |path| 
+	Find.find(*repertoires_racines) do |path| 
 		if File.file?(path) && path.end_with?(".flac") 
-			repertoires << File.dirname(path)
+			repertoires << path
 		end
 	end
 	return repertoires
