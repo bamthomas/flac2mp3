@@ -19,6 +19,9 @@ class TextFrameWithUtf8Encoding(Frame):
 		data = UTF_8_ENCODING + self.textFrame.text.encode(id3EncodingToString(self.textFrame.encoding));
 		return self.textFrame.assembleFrame(data);
 
+if len(sys.argv) != 2:
+	print "usage : " + sys.argv[0] + " <mp3_file>";
+	sys.exit(1);
 
 tag.link(sys.argv[1])
 
