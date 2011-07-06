@@ -4,13 +4,13 @@ require 'find'
 require 'set'
 
 def trouveFlac(*repertoires_racines) 
-	repertoires = Set.new
+	fichiers_flac = Set.new
 	Find.find(*repertoires_racines) do |path| 
 		if File.file?(path) && path.end_with?(".flac") 
-			repertoires << path
+			fichiers_flac << path
 		end
 	end
-	return repertoires
+	return fichiers_flac
 end
 
 def litMetaFlac(texte)
