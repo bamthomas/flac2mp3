@@ -9,7 +9,7 @@ RACINE_REPO_MP3 = "/home/media/musique/mp3/export"
 
 class Flac2mp3
 
-  def trouveFichiers(extension, *repertoires_racines)
+  def trouve_fichiers(extension, *repertoires_racines)
     fichiers = []
     Find.find(*repertoires_racines) do |path|
       if File.file?(path) && path.end_with?(extension)
@@ -19,7 +19,7 @@ class Flac2mp3
     fichiers
   end
 
-  def litMetaFlac(texte)
+  def lit_meta_flac(texte)
     metadonnees = Hash[*texte.split(/=|\n/).flatten]
     metadonnees.each {|key, value|
       metadonnees.delete(key)
@@ -35,7 +35,7 @@ class Flac2mp3
     if (! File.directory?(chemin_mp3))
       `mkdir -p #{chemin_mp3}`
     end
-    metaflac = litMetaFlac %x[metaflac  --export-tags-to=- "#{fichier_flac}"]
+    metaflac = self.lit_meta_flac %x[metaflac  --export-tags-to=- "#{fichier_flac}"]
     fichier_mp3 = chemin_mp3 + "/" + File.basename(fichier_flac).gsub(/\.flac$/, ".mp3")
     image= chemin_flac + "/cover.jpg"
     artiste = metaflac["ARTIST"]
@@ -59,7 +59,7 @@ class Flac2mp3
   # ####################
 
 	def main(*args)
-		items_to_process = self.trouveFichiers(".flac", *args)
+		items_to_process = self.trouve_fichiers(".flac", *args)
     items_left = items_to_process.length
     puts "found #{items_left} flac files and #{POOL_SIZE} encoding units (cores)"
     puts "mp3 repository is <#{RACINE_REPO_MP3}>"
@@ -88,6 +88,3 @@ class Flac2mp3
 end
 
 Flac2mp3.new.main *ARGV
-
-
-

@@ -28,8 +28,8 @@ class Flac2mp3Test < Test::Unit::TestCase
     `mkdir -p test/r1 test/r2/r21 test/r3`
   	`touch test/r1/f11.flac test/r1/f12.flac test/r2/r21/f21.flac`
     liste_attendue = ["./test/r1/f11.flac", "./test/r1/f12.flac", "./test/r2/r21/f21.flac"].sort()
-    assert_equal(liste_attendue,  @flac2mp3.trouveFichiers(".flac", "./").sort())
-    assert_equal(liste_attendue,  @flac2mp3.trouveFichiers(".flac", "./test/r1", "./test/r2").sort())
+    assert_equal(liste_attendue,  @flac2mp3.trouve_fichiers(".flac", "./").sort())
+    assert_equal(liste_attendue,  @flac2mp3.trouve_fichiers(".flac", "./test/r1", "./test/r2").sort())
   end
 
 	def test_convert_arborescence
@@ -41,9 +41,9 @@ class Flac2mp3Test < Test::Unit::TestCase
       # il faut etre dans le repertoire racine des flacs
       Dir.chdir("test")
 
-      @flac2mp3.trouveFichiers(".flac", "./").each {|flac| @flac2mp3.flac2mp3(flac, "mp3")}
+      @flac2mp3.trouve_fichiers(".flac", "./").each {|flac| @flac2mp3.flac2mp3(flac, "mp3")}
 
-      assert_equal ["./mp3/r1/f11.mp3", "./mp3/r1/f12.mp3", "./mp3/r2/r21/f21.mp3"].sort, @flac2mp3.trouveFichiers(".mp3", "./").sort
+      assert_equal ["./mp3/r1/f11.mp3", "./mp3/r1/f12.mp3", "./mp3/r2/r21/f21.mp3"].sort, @flac2mp3.trouve_fichiers(".mp3", "./").sort
     ensure Dir.chdir("..")
     end
   end

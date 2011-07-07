@@ -6,23 +6,23 @@ class Flac2mp3Test < Test::Unit::TestCase
     @flac2mp3 = Flac2mp3.new
   end
 
-	def testLitMetaFlac_uneLigne
-		assert_equal( {"TITRE"=>"titre"} ,@flac2mp3.litMetaFlac("TITRE=titre"))
+	def test_lit_metaflac_une_ligne
+		assert_equal( {"TITRE"=>"titre"} ,@flac2mp3.lit_meta_flac("TITRE=titre"))
 	end
 
-	def testLitMetaFlac_deuxLignes
-		assert_equal( {"TITRE"=>"titre","ALBUM"=>"album"} ,@flac2mp3.litMetaFlac("TITRE=titre\nALBUM=album"))
+	def test_lit_meta_flac_deux_lignes
+		assert_equal( {"TITRE"=>"titre","ALBUM"=>"album"} ,@flac2mp3.lit_meta_flac("TITRE=titre\nALBUM=album"))
 	end
 
-	def testLitMetaFlac_deuxLignesAvecMajusculeMinuscule
-		assert_equal( {"TITRE"=>"titre","ALBUM"=>"album"} ,@flac2mp3.litMetaFlac("TiTrE=titre\nalbum=album"))
+	def test_lit_meta_flac_deux_lignes_avec_majuscule_minuscule
+		assert_equal( {"TITRE"=>"titre","ALBUM"=>"album"} ,@flac2mp3.lit_meta_flac("TiTrE=titre\nalbum=album"))
 	end
 
-	def testFlac2mp3_fichierNeTerminantPasParFlac
+	def test_flac2mp3_fichier_ne_terminant_pas_par_flac
 		assert_raise(RuntimeError) {@flac2mp3.flac2mp3("fichier.blah", "inutile")}
 	end
 
-	def testFlac2mp3_fichierInexistant
+	def test_flac2mp3_fichier_inexistant
 		assert_raise(RuntimeError) {@flac2mp3.flac2mp3("fichier_inexistant.flac", "inutile")}
 	end
 end
