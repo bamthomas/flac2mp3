@@ -59,28 +59,30 @@ class Flac2mp3
   # ####################
 
 	def main(*args)
-		items_to_process = trouveFichiers(".flac", *args)
-
-		message_queue = Queue.new
+		items_to_process = self.trouveFichiers(".flac", *args)
+    items_left = items_to_process.length
+    puts "found #{items_left} flac files and #{POOL_SIZE} encoding units (cores)"
+    puts "mp3 repository is <#{RACINE_REPO_MP3}>"
+		
+    message_queue = Queue.new
 		start_thread =
   		lambda do
       Thread.new(items_to_process.shift) do |flac|
         puts "Processing #{flac}"
-        flac2mp3(flac)
+        self.flac2mp3(flac, RACINE_REPO_MP3)
         message_queue.push(:done)
       end
+    end
 
-      items_left = items_to_process.length
+    [items_left, POOL_SIZE].min.times do
+      start_thread[]
+    end
 
-      [items_left, POOL_SIZE].min.times do
-        start_thread[]
-      end
-
-      while items_left > 0
-        message_queue.pop
-        items_left -= 1
-        start_thread[] unless items_left < POOL_SIZE
-      end
+    while items_left > 0
+      message_queue.pop
+      items_left -= 1
+      puts "items left : #{items_left}"
+      start_thread[] unless items_left < POOL_SIZE
     end
   end
 end
