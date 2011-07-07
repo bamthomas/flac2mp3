@@ -26,7 +26,7 @@ def flac2mp3(nom_fichier)
 	raise "fichier inexistant :" + nom_fichier if not File.exist? nom_fichier
 	metaflac = litMetaFlac %x[metaflac  --export-tags-to=- "#{nom_fichier}"]
 	nom_fichier_mp3 = nom_fichier.gsub(/\.flac$/, ".mp3")	
-	cover=File.dirname(nom_fichier) + "/cover.jpg"
+	image=File.dirname(nom_fichier) + "/cover.jpg"
 	artiste = metaflac["ARTIST"]
 	plage = metaflac["TRACKNUMBER"]
 	album = metaflac["ALBUM"]
@@ -36,8 +36,8 @@ def flac2mp3(nom_fichier)
 	if date.include? "-"
 		date = date.split('-')[0]
 	end
-	puts "flac -dcs #{nom_fichier} | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - #{nom_fichier_mp3} && eyeD3  -a #{artiste} -n #{plage} -A #{album} -t #{titre} --add-image #{cover}:FRONT_COVER: -G #{genre} -Y #{date} --set-encoding=utf8 #{nom_fichier_mp3}"
-	%x[flac -dcs "#{nom_fichier}" | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - "#{nom_fichier_mp3}" && eyeD3  -a "#{artiste}" -n "#{plage}" -A "#{album}" -t "#{titre}" --add-image "#{cover}":FRONT_COVER: -G "#{genre}" -Y "#{date}" --set-encoding=utf8 "#{nom_fichier_mp3}"]
+	puts "flac -dcs #{nom_fichier} | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - #{nom_fichier_mp3} && eyeD3  -a #{artiste} -n #{plage} -A #{album} -t #{titre} --add-image #{image}:FRONT_COVER: -G #{genre} -Y #{date} --set-encoding=utf8 #{nom_fichier_mp3}"
+	%x[flac -dcs "#{nom_fichier}" | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - "#{nom_fichier_mp3}" && eyeD3  -a "#{artiste}" -n "#{plage}" -A "#{album}" -t "#{titre}" --add-image "#{image}":FRONT_COVER: -G "#{genre}" -Y "#{date}" --set-encoding=utf8 "#{nom_fichier_mp3}"]
 
 end
 
