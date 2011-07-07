@@ -15,9 +15,9 @@ class Flac2mp3Test < Test::Unit::TestCase
 		file = File.new("./test/tmp.wav", "wb")
 		donnees_wav.each {|hex| file.putc hex.to_i(16)}
 		file.close
-		`touch cover.jpg`
+		`touch test/cover.jpg`
 		`flac -V --totally-silent -f -T "ARTIST=artist" -T "TRACKNUMBER=1" -T "ALBUM=album" -T "TITLE=titre" -T "GENRE=Electronic" -T "DATE=2008" ./test/tmp.wav -o ./test/tmp.flac`
-		`lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 ./test/tmp.wav ./test/tmp_attendu.mp3 && eyeD3  -a "artist" -n "1" -A "album" -t "titre" --add-image cover.jpg:FRONT_COVER: -G "Electronic" -Y "2008" --set-encoding=utf8 ./test/tmp_attendu.mp3`
+		`lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 ./test/tmp.wav ./test/tmp_attendu.mp3 && eyeD3  -a "artist" -n "1" -A "album" -t "titre" --add-image test/cover.jpg:FRONT_COVER: -G "Electronic" -Y "2008" --set-encoding=utf8 ./test/tmp_attendu.mp3`
 
 		flac2mp3("./test/tmp.flac")
 	 	
@@ -25,7 +25,6 @@ class Flac2mp3Test < Test::Unit::TestCase
 		mp3tags_attendus = %x[id3tool ./test/tmp_attendu.mp3].gsub(/Filename:.*\n/,"")
 		mp3tags_generes = %x[id3tool ./test/tmp.mp3].gsub(/Filename:.*\n/,"")
 		assert_equal(mp3tags_attendus,mp3tags_generes, "les tags mp3 doivent etre les memes")
-		File.delete("cover.jpg")
 	end	
 
 	def testLitMetaFlac_uneLigne
