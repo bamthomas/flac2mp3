@@ -1,4 +1,4 @@
-This is a little repo with 2 utility scripts for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores in the machine.
+This is a little repo with 2 utility scripts for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
 
 It works with linux, eyeD3, lame, flac, and metaflac.
 
