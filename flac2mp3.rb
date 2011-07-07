@@ -3,14 +3,14 @@
 require 'find'
 require 'rubygems'
 
-def trouveFlac(*repertoires_racines) 
-	fichiers_flac = []
+def trouveFichiers(extension, *repertoires_racines) 
+	fichiers = []
 	Find.find(*repertoires_racines) do |path| 
-		if File.file?(path) && path.end_with?(".flac") 
-			fichiers_flac << path
+		if File.file?(path) && path.end_with?(extension) 
+			fichiers << path
 		end
 	end
-	return fichiers_flac
+	fichiers
 end
 
 def litMetaFlac(texte)
@@ -49,7 +49,7 @@ end
 
 nombre_processeurs = `cat /proc/cpuinfo | grep processor | wc -l`.to_i
 
-items_to_process = trouveFlac(*ARGV)
+items_to_process = trouveFichiers(".flac", *ARGV)
 
 message_queue = Queue.new
 start_thread = 

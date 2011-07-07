@@ -1,5 +1,6 @@
 require "flac2mp3"
 require "test/unit"
+RACINE_REPO_MP3 = "test/mp3"
 
 class Flac2mp3Test < Test::Unit::TestCase
 	def setup 
@@ -26,12 +27,20 @@ class Flac2mp3Test < Test::Unit::TestCase
 		`mkdir -p test/r1 test/r2/r21 test/r3`
 		`touch test/r1/f11.flac test/r1/f12.flac test/r2/r21/f21.flac`
 		liste_attendue = ["./test/r1/f11.flac", "./test/r1/f12.flac", "./test/r2/r21/f21.flac"].sort()
-		assert_equal(liste_attendue,  trouveFlac(".").sort())
-		assert_equal(liste_attendue,  trouveFlac("./test/r1", "./test/r2").sort())
+		assert_equal(liste_attendue,  trouveFichiers(".flac", ".").sort())
+		assert_equal(liste_attendue,  trouveFichiers(".flac", "./test/r1", "./test/r2").sort())
 	end
 
-	def convertiArborescence
-		
+	def testConvertiArborescence
+		`mkdir -p test/r1 test/r2/r21 test/r3`
+		creeFichierFlac("test/r1/f11.flac")
+		creeFichierFlac("test/r1/f12.flac")
+		creeFichierFlac("test/r2/r21/f21.flac")
+		Dir.mkdir(RACINE_REPO_MP3)
+
+		flac2mp3("test/")
+
+		assert_equal ["test/mp3/r1/f11.mp3", "test/mp3/r1/f12.mp3", "test/mp3/r2/r21/f21.mp3"].sort, trouveFichiers(".mp3", "test").sort
 	end
 
 	def creeFichierFlac(nom)
