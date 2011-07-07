@@ -50,8 +50,8 @@ class Flac2mp3Test < Test::Unit::TestCase
 	def testTrouveFichiersFlac
 		`mkdir -p test/r1 test/r2/r21 test/r3`
 		`touch test/r1/f11.flac test/r1/f12.flac test/r2/r21/f21.flac`
-		set_attendu = Set.new << "./test/r1/f11.flac" << "./test/r1/f12.flac" << "./test/r2/r21/f21.flac"
-		assert_equal(set_attendu,  trouveFlac("."))
-		assert_equal(set_attendu,  trouveFlac("./test/r1", "./test/r2"))
+		liste_attendue = ["./test/r1/f11.flac", "./test/r1/f12.flac", "./test/r2/r21/f21.flac"].sort()
+		assert_equal(liste_attendue,  trouveFlac(".").sort())
+		assert_equal(liste_attendue,  trouveFlac("./test/r1", "./test/r2").sort())
 	end
 end
