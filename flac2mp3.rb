@@ -1,10 +1,10 @@
 #!/usr/bin/ruby
 
 require 'find'
-require 'set'
+require 'rubygems'
 
 def trouveFlac(*repertoires_racines) 
-	fichiers_flac = Set.new
+	fichiers_flac = []
 	Find.find(*repertoires_racines) do |path| 
 		if File.file?(path) && path.end_with?(".flac") 
 			fichiers_flac << path
@@ -41,14 +41,35 @@ def flac2mp3(nom_fichier)
 
 end
 
+################# main
+# threadpool comming from 
+# http://blog.vmoroz.com/2011/06/ruby-thread-pool-in-erlang-style.html
+# thx !
+# ####################
 
-threads = []
-for file in ARGV
-	threads << Thread.new(file) { |myFile|
-		flac2mp3(file)
-  	}
+nombre_processeurs = `cat /proc/cpuinfo | grep processor | wc -l`.to_i
+
+items_to_process = trouveFlac(*ARGV)
+
+message_queue = Queue.new
+start_thread = 
+  lambda do
+    Thread.new(items_to_process.shift) do |flac|
+      puts "Processing #{flac}"
+      flac2mp3(flac)
+      message_queue.push(:done)
+    end
+  end
+
+items_left = items_to_process.length
+
+POOL_SIZE=nombre_processeurs
+[items_left, POOL_SIZE].min.times do
+  start_thread[]
 end
 
-threads.each { |aThread|  aThread.join }
-
-#ARGV.each { |file| flac2mp3(file)}
+while items_left > 0 
+  message_queue.pop
+  items_left -= 1
+  start_thread[] unless items_left < POOL_SIZE
+end
