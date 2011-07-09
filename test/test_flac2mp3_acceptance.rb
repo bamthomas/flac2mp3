@@ -14,7 +14,7 @@ class TestFlac2mp3Acceptance < Test::Unit::TestCase
 
   def test_recette
     cree_fichier_flac("./tmp/tmp.flac")
-    `lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 ./tmp/tmp.wav ./tmp/tmp_attendu.mp3 && eyeD3  -a "artist" -n "1" -A "album" -t "titre" --add-image ./tmp/cover.jpg:FRONT_COVER: -G "Electronic" -Y "2008" --set-encoding=utf8 ./tmp/tmp_attendu.mp3`
+    `lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 ./tmp/tmp.wav ./tmp/tmp_attendu.mp3 && eyeD3  -a "artist" -n "1" -A "album" -t "titre" --add-image ./tmp/cover.jpg:FRONT_COVER: -G "Electronic" -Y "2008" --set-encoding=utf8 ./tmp/tmp_attendu.mp3 2> /dev/null`
     
     @flac2mp3.flac2mp3("./tmp/tmp.flac","./")
   
