@@ -11,6 +11,11 @@ class Flac2mp3
 
   def initialize
     @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
+  end
+
+  def log
+    @log
   end
   
   def trouve_fichiers(extension, *repertoires_racines)
@@ -50,7 +55,7 @@ class Flac2mp3
     if date.include? "-"
       date = date.split('-')[0]
     end
-    @log.info "transcoding #{fichier_flac} into #{fichier_mp3} with tags eyeD3 -a #{artiste} -n #{plage} -A #{album} -t #{titre} -G #{genre} -Y #{date} --add-image #{image}:FRONT_COVER:"
+    @log.info "transcoding #{fichier_flac} into #{fichier_mp3} artist: \"#{artiste}\" song: \"#{titre}\""
     @log.debug "flac -dcs #{fichier_flac} | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - #{fichier_mp3} && eyeD3  -a #{artiste} -n #{plage} -A #{album} -t #{titre} --add-image #{image}:FRONT_COVER: -G #{genre} -Y #{date} --set-encoding=utf8 #{fichier_mp3}"
     `flac -dcs "#{fichier_flac}" | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 - "#{fichier_mp3}" && eyeD3  -a "#{artiste}" -n "#{plage}" -A "#{album}" -t "#{titre}" --add-image "#{image}":FRONT_COVER: -G "#{genre}" -Y "#{date}" --set-encoding=utf8 "#{fichier_mp3}" 2> /dev/null`
   end
@@ -90,19 +95,26 @@ class Flac2mp3
     while items_left > 0
       message_queue.pop
       items_left -= 1
-      @log.info "items left : #{items_left}"
+      @log.debug "items left : #{items_left}"
       start_thread[] unless items_left < POOL_SIZE
     end
   end
 end
 
-if ARGV.length == 0
-  Flac2mp3.new.main "./","./"
-else
-  destination = ARGV.pop
+flac2mp3 = Flac2mp3.new
+begin
   if ARGV.length == 0
-    Flac2mp3.new.main destination,"./"
+    flac2mp3.main "./","./"
   else
-    Flac2mp3.new.main destination, *ARGV
+    destination = ARGV.pop
+    if ARGV.length == 0
+      flac2mp3.main destination,"./"
+    else
+      flac2mp3.main destination, *ARGV
+    end
   end
+rescue => err
+  flac2mp3.log.fatal("Caught exception; exiting")
+  flac2mp3.log.fatal(err)
+  exit 1
 end
