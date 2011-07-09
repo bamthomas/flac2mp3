@@ -1,7 +1,7 @@
 require "flac2mp3"
 require "test/unit"
 
-class Flac2mp3Test < Test::Unit::TestCase
+class TestFlac2mp3< Test::Unit::TestCase
   
 	def setup
     @flac2mp3 = Flac2mp3.new
