@@ -33,7 +33,7 @@ class TestFlac2mp3Acceptance < Test::Unit::TestCase
   end
 
 	def test_convert_arborescence
-		`mkdir -p tmp/r1 tmp/r2/r21 tmp/r3`
+		`mkdir -p tmp/r1 tmp/r2/r21 tmp/r3 tmp/mp3`
 		cree_fichier_flac("tmp/r1/f11.flac")
 		cree_fichier_flac("tmp/r1/f12.flac")
 		cree_fichier_flac("tmp/r2/r21/f21.flac")
@@ -47,6 +47,10 @@ class TestFlac2mp3Acceptance < Test::Unit::TestCase
     ensure Dir.chdir("..")
     end
   end
+
+  def test_flac2mp3_destination_inexistante
+		assert_raise(RuntimeError) {@flac2mp3.main("repertoire/inexistant", "inutile")}
+	end
 
   def cree_fichier_flac(nom)
     if !File.exist?("./tmp/tmp.wav")

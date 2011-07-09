@@ -55,13 +55,15 @@ class Flac2mp3
       `mkdir -p #{chemin_mp3}`
     end
   end
+
   ################# main
   # threadpool comming from
   # http://blog.vmoroz.com/2011/06/ruby-thread-pool-in-erlang-style.html
   # thx !
   # ####################
-
 	def main(dest, *args)
+    raise "target mp3 directory <#{dest}> does not exist" if not File.directory? dest
+    
 		items_to_process = self.trouve_fichiers(".flac", *args)
     items_left = items_to_process.length
     puts "found #{items_left} flac files and #{POOL_SIZE} encoding units (cores)"
@@ -90,5 +92,13 @@ class Flac2mp3
   end
 end
 
-destination = ARGV.pop
-Flac2mp3.new.main destination, *ARGV
+if ARGV.length == 0
+  Flac2mp3.new.main "./","./"
+else
+  destination = ARGV.pop
+  if ARGV.length == 0
+    Flac2mp3.new.main destination,"./"
+  else
+    Flac2mp3.new.main destination, *ARGV
+  end
+end
