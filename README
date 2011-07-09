@@ -20,7 +20,7 @@ for example, if you have :
 
 
 1) if you do in flac directory :
-$ flac2mp3 ../mp3
+$ flac2mp3.rb ../mp3
 
 you'll have : 
 
@@ -38,7 +38,7 @@ you'll have :
                            |song2.mp3
 
 2) if you do in flac directory : 
-$ flac2mp3 artist2 ../mp3
+$ flac2mp3.rb artist2 ../mp3
 
 you'll have :
 
