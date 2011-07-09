@@ -3,3 +3,16 @@ This is a little repo with 2 utility scripts for transcoding flac files into mp3
 It works with linux, eyeD3, lame, flac, and metaflac.
 
 This is a work in progress.
+
+
+==========================
+To develop and test, it is easier to run autotest : 
+cf http://ph7spot.com/musings/getting-started-with-autotest
+
+$ bash < <(curl -s https://rvm.beginrescueend.com/install/rvm)
+$ source "$HOME/.rvm/scripts/rvm"
+$ rvm install 1.8.7
+$ rvmsudo gem install ZenTest
+$ rvmsudo gem install autotest-rails
+$ rvmsudo gem install redgreen
+
