@@ -101,20 +101,21 @@ class Flac2mp3
   end
 end
 
+if ARGV.length == 0
+  puts "usage : flac2mp3 [origin directories] mp3/repository/destination"
+  exit 1
+end
+
 flac2mp3 = Flac2mp3.new
 begin
+  destination = ARGV.pop
   if ARGV.length == 0
-    flac2mp3.main "./","./"
+    flac2mp3.main destination,"./"
   else
-    destination = ARGV.pop
-    if ARGV.length == 0
-      flac2mp3.main destination,"./"
-    else
-      flac2mp3.main destination, *ARGV
-    end
+    flac2mp3.main destination, *ARGV
   end
 rescue => err
   flac2mp3.log.fatal("Caught exception; exiting")
   flac2mp3.log.fatal(err)
-  exit 1
+  exit 2
 end

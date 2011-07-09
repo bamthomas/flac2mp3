@@ -8,9 +8,8 @@ lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100
 It works with linux, eyeD3, lame, flac, and metaflac.
 
 Usage : 
-flac2mp3 [origin directories] [mp3/repository/destination]
+flac2mp3 [origin directories] mp3/repository/destination
 
-- If no argument is given, it will transcode flac files from current directory and put them in the same directory than the flac files.
 - If one argument is given it is the destination : it will transcode flac files found under the current directory and put mp3 files in the destination directory with the same directory structure.
 - If more than one argument is given, it will transcode flac files from the given directories to the destination.
 
