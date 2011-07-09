@@ -32,10 +32,9 @@ class Flac2mp3
     raise "fichier inexistant :" + fichier_flac if not File.exist? fichier_flac
     chemin_flac = File.dirname(fichier_flac)
     chemin_mp3 = racine_export_mp3 + "/" + chemin_flac
-    if (! File.directory?(chemin_mp3))
-      `mkdir -p #{chemin_mp3}`
-    end
-    metaflac = self.lit_meta_flac %x[metaflac  --export-tags-to=- "#{fichier_flac}"]
+    cree_repertoire_si_nessessaire(chemin_mp3)
+    
+    metaflac = self.lit_meta_flac `metaflac  --export-tags-to=- "#{fichier_flac}"`
     fichier_mp3 = chemin_mp3 + "/" + File.basename(fichier_flac).gsub(/\.flac$/, ".mp3")
     image= chemin_flac + "/cover.jpg"
     artiste = metaflac["ARTIST"]
@@ -52,6 +51,11 @@ class Flac2mp3
 
   end
 
+  def cree_repertoire_si_nessessaire(chemin_mp3)
+    if (! File.directory?(chemin_mp3))
+      `mkdir -p #{chemin_mp3}`
+    end
+  end
   ################# main
   # threadpool comming from
   # http://blog.vmoroz.com/2011/06/ruby-thread-pool-in-erlang-style.html
