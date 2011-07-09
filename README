@@ -2,8 +2,56 @@ This is a little repo with 2 utility scripts for transcoding flac files into mp3
 
 It works with linux, eyeD3, lame, flac, and metaflac.
 
-This is a work in progress.
+Usage : 
+flac2mp3 [origin directories] [mp3/repository/destination]
 
+- If no argument is given, it will transcode flac files from current directory and put them in the same directory than the flac files.
+- If one argument is given it is the destination : it will transcode flac files found under the current directory and put mp3 files in the destination directory with the same directory structure.
+- If more than one argument is given, it will transcode flac files from the given directories to the destination.
+
+for example, if you have :
+
+/path/to/flac/artist1/album1/song1.flac
+             |              |song2.flac
+             |              |song3.flac
+             |
+             /artist2/album1/song1.flac
+                            |song2.flac
+
+
+1) if you do in flac directory :
+$ flac2mp3 ../mp3
+
+you'll have : 
+
+/path/to/flac/artist1/album1/song1.flac
+             |              |song2.flac
+             |              |song3.flac
+             |      
+             /artist2/album1/song1.flac
+                            |song2.flac
+/path/to/mp3/artist1/album1/song1.mp3
+            |              |song2.mp3
+            |              |song3.mp3
+            |
+            /artist2/album1/song1.mp3
+                           |song2.mp3
+
+2) if you do in flac directory : 
+$ flac2mp3 artist2 ../mp3
+
+you'll have :
+
+/path/to/flac/artist1/album1/song1.flac
+             |              |song2.flac
+             |              |song3.flac
+             |
+             /artist2/album1/song1.flac
+                            |song2.flac
+/path/to/mp3/artist2/album1/song1.mp3
+                           |song2.mp3
+
+This is a work in progress.
 
 ==========================
 To develop and test, it is easier to run autotest : 
