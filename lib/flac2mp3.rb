@@ -5,7 +5,6 @@ require 'rubygems'
 
 NOMBRE_PROCESSEURS = `cat /proc/cpuinfo | grep processor | wc -l`.to_i
 POOL_SIZE=NOMBRE_PROCESSEURS
-RACINE_REPO_MP3 = "/home/media/musique/mp3/export"
 
 class Flac2mp3
 
@@ -62,18 +61,18 @@ class Flac2mp3
   # thx !
   # ####################
 
-	def main(*args)
+	def main(dest, *args)
 		items_to_process = self.trouve_fichiers(".flac", *args)
     items_left = items_to_process.length
     puts "found #{items_left} flac files and #{POOL_SIZE} encoding units (cores)"
-    puts "mp3 repository is <#{RACINE_REPO_MP3}>"
+    puts "mp3 destination is <#{dest}>"
 		
     message_queue = Queue.new
 		start_thread =
   		lambda do
       Thread.new(items_to_process.shift) do |flac|
         puts "Processing #{flac}"
-        self.flac2mp3(flac, RACINE_REPO_MP3)
+        self.flac2mp3(flac, dest)
         message_queue.push(:done)
       end
     end
@@ -91,4 +90,5 @@ class Flac2mp3
   end
 end
 
-Flac2mp3.new.main *ARGV
+destination = ARGV.pop
+Flac2mp3.new.main destination, *ARGV

@@ -41,7 +41,7 @@ class TestFlac2mp3Acceptance < Test::Unit::TestCase
       # il faut etre dans le repertoire racine des flacs
       Dir.chdir("tmp")
 
-      @flac2mp3.trouve_fichiers(".flac", "./").each {|flac| @flac2mp3.flac2mp3(flac, "mp3")}
+      @flac2mp3.main("mp3", "./")
 
       assert_equal ["./mp3/r1/f11.mp3", "./mp3/r1/f12.mp3", "./mp3/r2/r21/f21.mp3"].sort, @flac2mp3.trouve_fichiers(".mp3", "./").sort
     ensure Dir.chdir("..")
