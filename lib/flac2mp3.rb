@@ -33,9 +33,9 @@ class Flac2mp3
     chemin_flac = File.dirname(fichier_flac)
     chemin_mp3 = racine_export_mp3 + "/" + chemin_flac
     cree_repertoire_si_nessessaire(chemin_mp3)
+    fichier_mp3 = chemin_mp3 + "/" + File.basename(fichier_flac).gsub(/\.flac$/, ".mp3")
     
     metaflac = self.lit_meta_flac `metaflac  --export-tags-to=- "#{fichier_flac}"`
-    fichier_mp3 = chemin_mp3 + "/" + File.basename(fichier_flac).gsub(/\.flac$/, ".mp3")
     image= chemin_flac + "/cover.jpg"
     artiste = metaflac["ARTIST"]
     plage = metaflac["TRACKNUMBER"]
