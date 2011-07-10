@@ -14,7 +14,7 @@ class TestFlac2mp3Acceptance < Test::Unit::TestCase
 
   def test_recette
     cree_fichier_flac("./tmp/tmp.flac")
-    `lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 ./tmp/tmp.wav ./tmp/tmp_attendu.mp3 && eyeD3  -a "artist" -n "1" -A "album" -t "titre" --add-image ./tmp/cover.jpg:FRONT_COVER: -G "Electronic" -Y "2008" --set-encoding=utf8 ./tmp/tmp_attendu.mp3 2> /dev/null`
+    `lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 ./tmp/tmp.wav ./tmp/tmp_attendu.mp3 && eyeD3  -a "artist" -n "1" -A "album" -t "titre à accent" --add-image ./tmp/cover.jpg:FRONT_COVER: -G "Electronic" -Y "2008" --set-encoding=utf8 ./tmp/tmp_attendu.mp3 2> /dev/null`
     
     @flac2mp3.flac2mp3("./tmp/tmp.flac","./")
   
@@ -61,6 +61,6 @@ class TestFlac2mp3Acceptance < Test::Unit::TestCase
     end
     image = File.dirname(nom) + "/cover.jpg"
     `touch #{image}`
-    `flac -V --totally-silent -f -T "ARTIST=artist" -T "TRACKNUMBER=1" -T "ALBUM=album" -T "TITLE=titre" -T "GENRE=Electronic" -T "DATE=2008" ./tmp/tmp.wav -o #{nom}`
+    `flac -V --totally-silent -f -T "ARTIST=artist" -T "TRACKNUMBER=1" -T "ALBUM=album" -T "TITLE=titre à accent" -T "GENRE=Electronic" -T "DATE=2008" ./tmp/tmp.wav -o #{nom}`
   end
 end
