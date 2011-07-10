@@ -104,7 +104,7 @@ end
 ################# main
 if __FILE__ == $0
   if ARGV.length == 0
-    puts "usage : flac2mp3 [origin directories] mp3/repository/destination"
+    puts "usage : flac2mp3 [origin flac directories] mp3/repository/destination"
     exit 1
   end
 
