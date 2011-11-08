@@ -3,6 +3,7 @@
 require 'find'
 require 'rubygems'
 require 'logger'
+require 'thread'
 
 NOMBRE_PROCESSEURS = `cat /proc/cpuinfo | grep processor | wc -l`.to_i
 POOL_SIZE=NOMBRE_PROCESSEURS
