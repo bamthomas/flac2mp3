@@ -31,13 +31,14 @@ class Flac2mp3
 
   def lit_meta_flac(texte)
     metadonnees = Hash[*texte.split(/=|\n/).flatten]
-    metadonnees.each { |key, value|
+    metadonnees.each {|key, value|
       metadonnees.delete(key)
       metadonnees[key.upcase] = value
     }
   end
 
   def flac2mp3(fichier_flac, racine_export_mp3)
+    @log.debug "flac2mp3"
     raise "l'extension du fichier n'est pas .flac :" + fichier_flac if not fichier_flac =~ /.flac$/
     raise "fichier inexistant :" + fichier_flac if not File.exist? fichier_flac
     chemin_flac = File.dirname(fichier_flac)
@@ -46,6 +47,7 @@ class Flac2mp3
     fichier_mp3 = chemin_mp3 + "/" + File.basename(fichier_flac).gsub(/\.flac$/, ".mp3")
 
     metaflac = self.lit_meta_flac `metaflac  --export-tags-to=- "#{fichier_flac}"`
+    @log.debug metaflac
     image= chemin_flac + "/cover.jpg"
     artiste = metaflac["ARTIST"]
     plage = metaflac["TRACKNUMBER"]
@@ -62,7 +64,7 @@ class Flac2mp3
   end
 
   def cree_repertoire_si_nessessaire(chemin_mp3)
-    if (!File.directory?(chemin_mp3))
+    if (! File.directory?(chemin_mp3))
       `mkdir -p #{chemin_mp3}`
     end
   end
@@ -72,22 +74,27 @@ class Flac2mp3
   # http://blog.vmoroz.com/2011/06/ruby-thread-pool-in-erlang-style.html
   # thx !
   # ####################
-  def main(dest, *args)
+	def main(dest, *args)
     raise "target mp3 directory <#{dest}> does not exist" if not File.directory? dest
 
-    items_to_process = self.trouve_fichiers(".flac", *args)
+		items_to_process = self.trouve_fichiers(".flac", *args)
     items_left = items_to_process.length
     @log.info "mp3 repository destination is <#{dest}>"
     @log.info "found #{items_left} flac files and #{POOL_SIZE} encoding units (cores)"
 
     message_queue = Queue.new
-    start_thread =
-        lambda do
-          Thread.new(items_to_process.shift) do |flac|
-            self.flac2mp3(flac, dest)
-            message_queue.push(:done)
-          end
+		start_thread =
+  		lambda do
+      Thread.new(items_to_process.shift) do |flac|
+        begin
+          self.flac2mp3(flac, dest)
+        rescue => err
+          @log.error("error while processing #{flac} : #{err}")
+        ensure
+          message_queue.push(:done)
         end
+      end
+    end
 
     [items_left, POOL_SIZE].min.times do
       start_thread[]
@@ -113,7 +120,7 @@ if __FILE__ == $0
   begin
     destination = ARGV.pop
     if ARGV.length == 0
-      flac2mp3.main destination, "./"
+      flac2mp3.main destination,"./"
     else
       flac2mp3.main destination, *ARGV
     end
