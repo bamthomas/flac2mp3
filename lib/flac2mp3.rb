@@ -30,7 +30,10 @@ class Flac2mp3
   end
 
   def lit_meta_flac(texte)
-    metadonnees = Hash[*texte.split(/=|\n/).flatten]
+    lignes = texte.split(/\n/)
+    tableau_sans_lignes_seules = lignes.select {|v| v =~ /=/}
+    tableau_cle_valeurs=tableau_sans_lignes_seules.join("\n").split(/\n|=/)
+    metadonnees = Hash[*tableau_cle_valeurs]
     metadonnees.each {|key, value|
       metadonnees.delete(key)
       metadonnees[key.upcase] = value

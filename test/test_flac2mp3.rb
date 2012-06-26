@@ -16,7 +16,12 @@ class TestFlac2mp3 < Test::Unit::TestCase
 
 	def test_lit_meta_flac_deux_lignes_avec_majuscule_minuscule
 		assert_equal( {"TITRE"=>"titre","ALBUM"=>"album"} ,@flac2mp3.lit_meta_flac("TiTrE=titre\nalbum=album"))
-	end
+  end
+
+  def test_lit_meta_flac_deux_lignes_avec_retour_chariot
+    assert_equal( {"DESCRIPTION" => "Interprètes : Hot Chip, interprète", "TITRE"=>"titre"},
+                   @flac2mp3.lit_meta_flac("DESCRIPTION=Interprètes : Hot Chip, interprète\nLabel : Domino Recording Co - Domino\nTITRE=titre"))
+  end
 
 	def test_flac2mp3_fichier_ne_terminant_pas_par_flac
 		assert_raise(RuntimeError) {@flac2mp3.flac2mp3("fichier.blah", "inutile")}
