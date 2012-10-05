@@ -36,7 +36,7 @@ class Flac2mp3
     metadonnees = Hash[*tableau_cle_valeurs]
     metadonnees.each {|key, value|
       metadonnees.delete(key)
-      metadonnees[key.upcase] = value
+      metadonnees[key.upcase] = value.delete '!'
     }
   end
 
