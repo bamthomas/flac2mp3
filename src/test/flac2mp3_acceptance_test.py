@@ -19,7 +19,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         tag.link('/tmp/tmp.mp3')
         self.assertEquals(u"artist", tag.getArtist())
         self.assertEquals((1,15), tag.getTrackNum())
-        self.assertEquals(u"album", tag.getAlbum())
+        self.assertEquals(u"album!", tag.getAlbum())
         self.assertEquals(u"title", tag.getTitle())
         self.assertEquals('Electronic', tag.getGenre().getName())
         self.assertEquals('2008', (tag.getDate()[0]).getYear())
@@ -31,5 +31,5 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
         open(dirname(flac_file) + "/cover.jpg", 'w').close()
 
-        flac_cmde = u'/usr/bin/flac -V --totally-silent -f -T ARTIST=artist -T TRACKNUMBER=1 -T TRACKTOTAL=15 -T ALBUM=album -T TITLE=title -T GENRE=Electronic -T DATE=2008 /tmp/tmp.wav -o %s' % flac_file
+        flac_cmde = u'/usr/bin/flac -V --totally-silent -f -T ARTIST=artist -T TRACKNUMBER=1 -T TRACKTOTAL=15 -T ALBUM=album! -T TITLE=title -T GENRE=Electronic -T DATE=2008 /tmp/tmp.wav -o %s' % flac_file
         subprocess.call(flac_cmde.split(' '))
