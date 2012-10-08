@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
-from flac2mp3 import Flac2Mp3
+import time
+from flac2mp3 import trouve_fichiers, run, transcode
 from os.path import join
 import shutil
 import subprocess
@@ -17,7 +18,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
     def test_recette(self):
         self.cree_fichier_flac('/tmp/tmp.flac')
 
-        Flac2Mp3().transcode('/tmp/tmp.flac','/tmp/tmp.mp3')
+        transcode('/tmp/tmp.flac','/tmp/tmp.mp3')
 
         tag = eyeD3.Tag()
         tag.link('/tmp/tmp.mp3')
@@ -37,8 +38,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             for file in ('/r1/f11.flac', '/r1/f12.flac', '/r2/r21/f21.flac'): open(tmp + file, 'w').close()
             liste_attendue = [tmp + '/r1/f11.flac', tmp + '/r1/f12.flac', tmp + '/r2/r21/f21.flac']
 
-            self.assertItemsEqual(liste_attendue, list(Flac2Mp3().trouve_fichiers(".flac", tmp)))
-            self.assertItemsEqual(liste_attendue, list(Flac2Mp3().trouve_fichiers(".flac", tmp + "/r1", tmp + "/r2")))
+            self.assertItemsEqual(liste_attendue, list(trouve_fichiers(".flac", tmp)))
+            self.assertItemsEqual(liste_attendue, list(trouve_fichiers(".flac", tmp + "/r1", tmp + "/r2")))
         finally:
             shutil.rmtree(tmp)
 
@@ -52,11 +53,12 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.cree_fichier_flac(join(tmp, 'r1/f12.flac'))
             self.cree_fichier_flac(join(tmp, 'r2/r21/f21.flac'))
 
-            Flac2Mp3().run(join(tmp, 'mp3'), tmp, tmp)
+            run(join(tmp, 'mp3'), tmp, tmp)
 
-            self.assertItemsEqual([join(tmp,mp3) for mp3 in ("mp3/r1/f11.mp3", "mp3/r1/f12.mp3", "mp3/r2/r21/f21.mp3")],
-                list(Flac2Mp3().trouve_fichiers(".mp3", tmp)))
+            expected = (join(tmp, mp3) for mp3 in ("mp3/r1/f11.mp3", "mp3/r1/f12.mp3", "mp3/r2/r21/f21.mp3"))
+            actual = list(trouve_fichiers(".mp3", tmp))
 
+            self.assertItemsEqual(actual, expected)
         finally:
             shutil.rmtree(tmp)
 
