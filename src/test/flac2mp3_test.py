@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 import commands
-from os.path import dirname
+from genericpath import isdir
+import os
+from os.path import dirname, join
 from subprocess import call
 import unittest
 import eyeD3
@@ -10,13 +12,14 @@ LAME_COMMAND = 'flac -dcs %s | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --
 
 __author__ = 'bruno thomas'
 
+
 class Flac2Mp3(object):
     def lit_meta_flac(self, tags):
         return dict((line.split('=')[0].upper(), line.split('=')[1].replace('\r','\r\n')) for line in tags.replace('\r\n','\r').split('\n'))
 
-    def run(self, flac_file, export_path):
+    def transcode(self, flac_file, mp3_file):
         tags=self.lit_meta_flac(commands.getoutput('metaflac  --export-tags-to=- %s' % flac_file))
-        mp3_file = flac_file.replace('.flac', '.mp3')
+
         call(LAME_COMMAND % (flac_file, mp3_file),shell=True)
         tag = eyeD3.Tag(mp3_file)
         tag.link(mp3_file)
@@ -29,6 +32,23 @@ class Flac2Mp3(object):
         tag.addImage(ImageFrame.FRONT_COVER, dirname(flac_file) + "/cover.jpg")
         tag.update()
 
+    def trouve_fichiers(self, extension, *repertoires_racines):
+        for repertoire_racine in repertoires_racines:
+            for root, _, files in os.walk(repertoire_racine):
+                for file in files:
+                    if file.endswith(extension): yield join(root, file)
+
+    def get_mp3_file(self, mp3_target_path, flac_root_path, flac_file):
+        flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
+        if flac_path_relative_to_root.startswith('/'): flac_path_relative_to_root = flac_path_relative_to_root[1:]
+        return join(mp3_target_path, flac_path_relative_to_root)
+
+    def run(self, mp3_target_path, flac_root_path, *flac_path_list):
+        for flac_file in set(self.trouve_fichiers('.flac', *flac_path_list)):
+            target_mp3_file = self.get_mp3_file(mp3_target_path, flac_root_path, flac_file)
+            if not isdir(dirname(target_mp3_file)):
+                os.makedirs(dirname(target_mp3_file))
+            self.transcode(flac_file, target_mp3_file)
 
 class TestFlac2Mp3(unittest.TestCase):
     def test_lit_metaflac_une_ligne(self):
@@ -44,10 +64,14 @@ class TestFlac2Mp3(unittest.TestCase):
         self.assertEquals({"DESCRIPTION" : u"Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino", "TITRE" : "titre"},
             Flac2Mp3().lit_meta_flac(u"DESCRIPTION=Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino\nTITRE=titre"))
 
+    def test_get_mp3_dir(self):
+        self.assertEquals('/target/dir/song.mp3', Flac2Mp3().get_mp3_file('/target', '/absolute/flac/path/', '/absolute/flac/path/dir/song.flac'))
+        self.assertEquals('/target/dir/song.mp3', Flac2Mp3().get_mp3_file('/target', '/absolute/flac/path', '/absolute/flac/path/dir/song.flac'))
+
     def test_flac2mp3_fichier_ne_terminant_pas_par_flac(self):
         with self.assertRaises(Exception):
-            Flac2Mp3().run("fichier.blah", "inutile")
+            Flac2Mp3().transcode("fichier.blah", "inutile")
 
     def test_flac2mp3_fichier_inexistant(self):
         with self.assertRaises(Exception):
-            Flac2Mp3().run("fichier_inexistant.flac", "inutile")
+            Flac2Mp3().transcode("fichier_inexistant.flac", "inutile")

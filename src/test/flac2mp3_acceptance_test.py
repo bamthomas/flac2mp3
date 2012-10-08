@@ -1,10 +1,14 @@
 # -*- coding: UTF-8 -*-
+from os.path import join
+import shutil
 import subprocess
-from os.path import dirname, getsize
+from tempfile import mkdtemp
+from os.path import dirname, isdir
+from os import makedirs
 import unittest
 import binascii
 import eyeD3
-from flac2mp3_test import Flac2Mp3, LAME_COMMAND
+from flac2mp3_test import Flac2Mp3
 
 __author__ = 'bruno thomas'
 
@@ -13,7 +17,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
     def test_recette(self):
         self.cree_fichier_flac('/tmp/tmp.flac')
 
-        Flac2Mp3().run('/tmp/tmp.flac','/tmp')
+        Flac2Mp3().transcode('/tmp/tmp.flac','/tmp/tmp.mp3')
 
         tag = eyeD3.Tag()
         tag.link('/tmp/tmp.mp3')
@@ -24,6 +28,37 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assertEquals('Electronic', tag.getGenre().getName())
         self.assertEquals('2008', (tag.getDate()[0]).getYear())
 
+    def test_trouve_fichiers_flac(self):
+        tmp = mkdtemp()
+        try:
+            for dir in ('/r1', '/r2/r21', '/r3'):
+                if not isdir(tmp + dir):
+                    makedirs(tmp + dir)
+            for file in ('/r1/f11.flac', '/r1/f12.flac', '/r2/r21/f21.flac'): open(tmp + file, 'w').close()
+            liste_attendue = [tmp + '/r1/f11.flac', tmp + '/r1/f12.flac', tmp + '/r2/r21/f21.flac']
+
+            self.assertItemsEqual(liste_attendue, list(Flac2Mp3().trouve_fichiers(".flac", tmp)))
+            self.assertItemsEqual(liste_attendue, list(Flac2Mp3().trouve_fichiers(".flac", tmp + "/r1", tmp + "/r2")))
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_convert_arborescence(self):
+        tmp = mkdtemp()
+        try:
+            for dir in ('/r1', '/r2/r21', '/r3', '/mp3'):
+                if not isdir(tmp + dir):
+                    makedirs(tmp + dir)
+            self.cree_fichier_flac(join(tmp, 'r1/f11.flac'))
+            self.cree_fichier_flac(join(tmp, 'r1/f12.flac'))
+            self.cree_fichier_flac(join(tmp, 'r2/r21/f21.flac'))
+
+            Flac2Mp3().run(join(tmp, 'mp3'), tmp, tmp)
+
+            self.assertItemsEqual([join(tmp,mp3) for mp3 in ("mp3/r1/f11.mp3", "mp3/r1/f12.mp3", "mp3/r2/r21/f21.mp3")],
+                list(Flac2Mp3().trouve_fichiers(".mp3", tmp)))
+
+        finally:
+            shutil.rmtree(tmp)
 
     def cree_fichier_flac(self, flac_file):
         with open('/tmp/tmp.wav', 'wb') as mp3:
