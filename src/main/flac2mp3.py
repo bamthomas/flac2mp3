@@ -20,7 +20,7 @@ __author__ = 'bruno thomas'
 
 LAME_COMMAND = 'flac -dcs %s | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2 - %s'
 POOL_SIZE = int(check_output('cat /proc/cpuinfo | grep processor | wc -l', shell=True))
-logging.basicConfig(format='[%(name)s] %(levelno)s: %(threadName)s) %(message)s' )
+logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s' )
 LOGGER=logging.getLogger('flac2mp3')
 
 def lit_meta_flac(tags):
@@ -28,7 +28,7 @@ def lit_meta_flac(tags):
 
 def transcode(flac_file, mp3_file):
     tags=lit_meta_flac(commands.getoutput('metaflac  --export-tags-to=- %s' % flac_file))
-    LOGGER.info('transcoding %s with tags (title=%s artist=%s)', flac_file, tags['TITLE'], tags['ARTIST'])
+    LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'],tags['TRACKTOTAL'])
     call(LAME_COMMAND % (flac_file, mp3_file),shell=True)
     tag = eyeD3.Tag(mp3_file)
     tag.link(mp3_file)
