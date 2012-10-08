@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from flac2mp3 import Flac2Mp3
 from os.path import join
 import shutil
 import subprocess
@@ -8,7 +9,6 @@ from os import makedirs
 import unittest
 import binascii
 import eyeD3
-from flac2mp3_test import Flac2Mp3
 
 __author__ = 'bruno thomas'
 
