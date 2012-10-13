@@ -27,7 +27,7 @@ for example, if you have :
 
 
 1) if you do in flac directory :
-$ flac2mp3.rb ../mp3
+$ flac2mp3.py ../mp3
 
 you'll have : 
 
@@ -48,7 +48,7 @@ you'll have :
                            |song2.mp3
 
 2) if you do in flac directory : 
-$ flac2mp3.rb artist2 ../mp3
+$ flac2mp3.py artist2 ../mp3
 
 you'll have :
 
@@ -65,12 +65,8 @@ you'll have :
 This is a work in progress.
 
 ==========================
-To develop and test, it is easier to run autotest : 
-cf http://ph7spot.com/musings/getting-started-with-autotest
+To develop and test, use your favorite IDE.
 
-$ bash < <(curl -s https://rvm.beginrescueend.com/install/rvm)
-$ source "$HOME/.rvm/scripts/rvm"
-$ rvm install 1.8.7
-$ rvmsudo gem install ZenTest
-$ rvmsudo gem install redgreen
+With bash to run the test you can do :
+$ PYTHONPATH=src/main/:src/test/ python -m unittest flac2mp3_test flac2mp3_acceptance_test
 
