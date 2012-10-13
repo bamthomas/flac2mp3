@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s')
 LOGGER = logging.getLogger('flac2mp3')
 
 def transcode(flac_file, mp3_file):
-    tags = read_meta_flac(get_raw_metaflac(flac_file))
+    tags = read_metaflac(get_raw_metaflac(flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
     call(LAME_COMMAND % (flac_file, mp3_file), shell=True)
     tag = eyeD3.Tag(mp3_file)
@@ -42,7 +42,7 @@ def transcode(flac_file, mp3_file):
 def get_raw_metaflac(flac_file):
     return check_output(('metaflac --export-tags-to=- %s' % flac_file).split(' ')).rstrip('\n')
 
-def read_meta_flac(tags):
+def read_metaflac(tags):
     return dict((line.split('=')[0].upper(), line.split('=')[1].replace('\r', '\r\n')) for line in tags.replace('\r\n', '\r').split('\n'))
 
 def find_files(extension, *root_dirs):
