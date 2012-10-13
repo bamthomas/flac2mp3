@@ -4,6 +4,7 @@ usage message.
 """
 import commands
 import getopt
+from itertools import repeat
 from logging import INFO
 import logging
 from multiprocessing import Pool
@@ -42,21 +43,18 @@ def transcode(flac_file, mp3_file):
     tag.addImage(ImageFrame.FRONT_COVER, dirname(flac_file) + "/cover.jpg")
     tag.update()
 
-
 def trouve_fichiers(extension, *repertoires_racines):
     for repertoire_racine in repertoires_racines:
         for root, _, files in os.walk(repertoire_racine):
             for file in files:
                 if file.endswith(extension): yield join(root, file)
 
-
 def get_mp3_file(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
     if flac_path_relative_to_root.startswith('/'): flac_path_relative_to_root = flac_path_relative_to_root[1:]
     return join(mp3_target_path, flac_path_relative_to_root)
 
-
-def process_transcoding(flac_file, flac_root_path, mp3_target_path):
+def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
     try:
         target_mp3_file = get_mp3_file(mp3_target_path, flac_root_path, flac_file)
         if not isdir(dirname(target_mp3_file)):
@@ -68,24 +66,17 @@ def process_transcoding(flac_file, flac_root_path, mp3_target_path):
     except Exception as e:
         LOGGER.error('error during the transcoding of %s : %s' % (flac_file, e))
 
-
 def run(mp3_target_path, flac_root_path, *flac_path_list):
     flac_files = set(trouve_fichiers('.flac', *flac_path_list))
     LOGGER.info('found %d flac files', len(flac_files))
     LOGGER.info('transcoding files with command "%s"', LAME_COMMAND % ('file.flac', 'file.mp3'))
 
-    thread_pool = Pool(POOL_SIZE)
-    for flac_file in flac_files:
-        thread_pool.apply_async(process_transcoding, args=(flac_file, flac_root_path, mp3_target_path))
-    thread_pool.close()
-    thread_pool.join()
-
+    Pool(POOL_SIZE).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
 
 class Usage(Exception):
     def __init__(self, msg, *args, **kwargs):
         super(Usage, self).__init__(*args, **kwargs)
         self.msg = msg
-
 
 def main(argv):
     try:
