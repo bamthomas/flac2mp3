@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import shutil
 import tempfile
-from flac2mp3 import find_files, run, transcode
+from flac2mp3 import find_files, run, transcode, get_raw_metaflac
 from os.path import join
 import subprocess
 from os.path import dirname, isdir
@@ -27,6 +27,11 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assertEquals(u"title", tag.getTitle())
         self.assertEquals('Electronic', tag.getGenre().getName())
         self.assertEquals('2008', (tag.getDate()[0]).getYear())
+
+    def test_get_raw_metaflac(self):
+        self.create_flac_file('/tmp/tmp.flac')
+        self.assertEquals('ARTIST=artist\nTRACKNUMBER=1\nTRACKTOTAL=15\nALBUM=album!\nTITLE=title\nGENRE=Electronic\nDATE=2008',
+            get_raw_metaflac('/tmp/tmp.flac'))
 
     def test_find_flac_files(self):
         with TemporaryDirectory() as tmp:

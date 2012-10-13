@@ -21,11 +21,3 @@ class TestFlac2Mp3(unittest.TestCase):
     def test_get_mp3_dir(self):
         self.assertEquals('/target/dir/song.mp3', get_mp3_filename('/target', '/absolute/flac/path/', '/absolute/flac/path/dir/song.flac'))
         self.assertEquals('/target/dir/song.mp3', get_mp3_filename('/target', '/absolute/flac/path', '/absolute/flac/path/dir/song.flac'))
-
-    def test_flac2mp3_file_is_not_ending_with_flac(self):
-        with self.assertRaises(Exception):
-            transcode("fichier.blah", "inutile")
-
-    def test_flac2mp3_file_not_found(self):
-        with self.assertRaises(Exception):
-            transcode("fichier_inexistant.flac", "inutile")
