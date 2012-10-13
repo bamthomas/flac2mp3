@@ -24,12 +24,12 @@ POOL_SIZE = int(check_output('cat /proc/cpuinfo | grep processor | wc -l', shell
 logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s')
 LOGGER = logging.getLogger('flac2mp3')
 
-def lit_meta_flac(tags):
+def read_meta_flac(tags):
     return dict((line.split('=')[0].upper(), line.split('=')[1].replace('\r', '\r\n')) for line in tags.replace('\r\n', '\r').split('\n'))
 
 
 def transcode(flac_file, mp3_file):
-    tags = lit_meta_flac(commands.getoutput('metaflac  --export-tags-to=- %s' % flac_file))
+    tags = read_meta_flac(commands.getoutput('metaflac  --export-tags-to=- %s' % flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
     call(LAME_COMMAND % (flac_file, mp3_file), shell=True)
     tag = eyeD3.Tag(mp3_file)
@@ -43,20 +43,20 @@ def transcode(flac_file, mp3_file):
     tag.addImage(ImageFrame.FRONT_COVER, dirname(flac_file) + "/cover.jpg")
     tag.update()
 
-def trouve_fichiers(extension, *repertoires_racines):
-    for repertoire_racine in repertoires_racines:
-        for root, _, files in os.walk(repertoire_racine):
+def find_files(extension, *root_dirs):
+    for root_dir in root_dirs:
+        for root, _, files in os.walk(root_dir):
             for file in files:
                 if file.endswith(extension): yield join(root, file)
 
-def get_mp3_file(mp3_target_path, flac_root_path, flac_file):
+def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
     if flac_path_relative_to_root.startswith('/'): flac_path_relative_to_root = flac_path_relative_to_root[1:]
     return join(mp3_target_path, flac_path_relative_to_root)
 
 def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
     try:
-        target_mp3_file = get_mp3_file(mp3_target_path, flac_root_path, flac_file)
+        target_mp3_file = get_mp3_filename(mp3_target_path, flac_root_path, flac_file)
         if not isdir(dirname(target_mp3_file)):
             try:
                 os.makedirs(dirname(target_mp3_file))
@@ -67,7 +67,7 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
         LOGGER.error('error during the transcoding of %s : %s' % (flac_file, e))
 
 def run(mp3_target_path, flac_root_path, *flac_path_list):
-    flac_files = set(trouve_fichiers('.flac', *flac_path_list))
+    flac_files = set(find_files('.flac', *flac_path_list))
     LOGGER.info('found %d flac files', len(flac_files))
     LOGGER.info('transcoding files with command "%s"', LAME_COMMAND % ('file.flac', 'file.mp3'))
 
