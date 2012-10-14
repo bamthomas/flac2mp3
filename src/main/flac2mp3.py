@@ -49,13 +49,13 @@ def get_vobis_comment_bloc(flac_file):
     with open(flac_file, 'rb') as flac:
         assert 'fLaC' == flac.read(4)
 
-        is_not_last_block = True
+        last_block = False
         block_type = 0
 
-        while is_not_last_block and block_type is not VOBIS_COMMENT:
+        while not last_block and block_type is not VOBIS_COMMENT:
             last_block_and_block_type = flac.read(1)
             block_type = ord(last_block_and_block_type) & 0x07
-            is_not_last_block = ord(last_block_and_block_type) & 0x80 is not 0x80
+            last_block = ord(last_block_and_block_type) & 0x80 is 0x80
             block_length, = unpack('>i', '\x00' + flac.read(3))
             vobis_comment_block = flac.read(int(block_length))
         if block_type is not VOBIS_COMMENT: raise MetaflacNotFound()
