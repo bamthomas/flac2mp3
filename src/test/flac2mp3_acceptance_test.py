@@ -25,12 +25,13 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assertEquals((1,15), tag.getTrackNum())
         self.assertEquals(u"album!", tag.getAlbum())
         self.assertEquals(u"title", tag.getTitle())
+        self.assertEquals('description', tag.getComments()[0].comment)
         self.assertEquals('Electronic', tag.getGenre().getName())
         self.assertEquals('2008', (tag.getDate()[0]).getYear())
 
     def test_get_flac_tags(self):
         self.create_flac_file('/tmp/tmp.flac')
-        self.assertEquals({'ALBUM': 'album!', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008', 'GENRE': 'Electronic', 'TRACKNUMBER': '1'},
+        self.assertEquals({'ALBUM': 'album!', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008', 'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1'},
             get_flac_tags(get_vobis_comment_bloc('/tmp/tmp.flac')))
 
     def test_find_flac_files(self):
@@ -66,7 +67,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
         open(dirname(flac_file) + "/cover.jpg", 'w').close()
 
-        flac_cmde = u'/usr/bin/flac -V --totally-silent -f -T ARTIST=artist -T TRACKNUMBER=1 -T TRACKTOTAL=15 -T ALBUM=album! -T TITLE=title -T GENRE=Electronic -T DATE=2008 /tmp/tmp.wav -o %s' % flac_file
+        flac_cmde = u'/usr/bin/flac -V --totally-silent -f -T ARTIST=artist -T TRACKNUMBER=1 -T TRACKTOTAL=15 -T ALBUM=album! -T TITLE=title -T GENRE=Electronic -T DATE=2008 -T DESCRIPTION=description /tmp/tmp.wav -o %s' % flac_file
         subprocess.call(flac_cmde.split(' '))
 
 
