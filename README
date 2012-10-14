@@ -5,7 +5,7 @@ The flac tags will be added to the mp3 files ut8 encoded, and if a cover.jpg fil
 The mp3 generated will be itunes compliant (accents, covers) and encoded with lame command : 
 lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100
 
-It works with linux, eyeD3, lame, flac, and metaflac.
+It works with linux, eyeD3, lame, and flac.
 
 Usage : 
 flac2mp3 [origin directories] mp3/repository/destination
