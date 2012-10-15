@@ -45,7 +45,7 @@ def transcode(flac_file, mp3_file):
 class MetaflacNotFound(Exception):pass
 
 def get_vobis_comment_bloc(flac_file):
-    vobis_comment_block = None
+    block = None
     with open(flac_file, 'rb') as flac:
         assert 'fLaC' == flac.read(4)
 
@@ -57,9 +57,9 @@ def get_vobis_comment_bloc(flac_file):
             block_type = ord(last_block_and_block_type) & 0x07
             last_block = ord(last_block_and_block_type) & 0x80 is 0x80
             block_length, = unpack('>i', '\x00' + flac.read(3))
-            vobis_comment_block = flac.read(int(block_length))
+            block = flac.read(int(block_length))
         if block_type is not VOBIS_COMMENT: raise MetaflacNotFound()
-    return vobis_comment_block
+    return block
 
 def get_flac_tags(vobis_comment_block):
     vendor_length, = unpack('I', vobis_comment_block[0:4])
@@ -72,7 +72,7 @@ def get_flac_tags(vobis_comment_block):
         offset += 4
         comments.append(vobis_comment_block[offset:offset + length])
         offset += length
-    return dict((comment.split('=')[0].upper(), comment.split('=')[1]) for comment in comments)
+    return dict((k.upper(),v) for k,v in [comment.split('=', 1) for comment in comments])
 
 def find_files(extension, *root_dirs):
     for root_dir in root_dirs:
