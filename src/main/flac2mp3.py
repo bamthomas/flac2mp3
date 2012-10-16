@@ -72,7 +72,7 @@ def get_flac_tags(vobis_comment_block):
         offset += 4
         comments.append(vobis_comment_block[offset:offset + length])
         offset += length
-    return dict((k.upper(),v) for k,v in [comment.split('=', 1) for comment in comments])
+    return dict(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
 def find_files(extension, *root_dirs):
     for root_dir in root_dirs:
@@ -103,6 +103,10 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
     LOGGER.info('transcoding files with command "%s"', LAME_COMMAND % ('file.flac', 'file.mp3'))
 
     Pool(POOL_SIZE).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
+
+def split_key_value_at_first_equal_and_upper_key(string_with_equal):
+    k,v = string_with_equal.split('=', 1)
+    return k.upper(), v
 
 class Usage(Exception):
     def __init__(self, msg, *args, **kwargs):
