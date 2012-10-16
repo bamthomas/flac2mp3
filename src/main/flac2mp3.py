@@ -138,7 +138,6 @@ def main(argv):
                 return 0
 
         LOGGER.setLevel(INFO)
-        LOGGER.info('found %d processing unit', POOL_SIZE)
 
         run(mp3_target_path, getcwd(), *args)
     except Usage, err:
