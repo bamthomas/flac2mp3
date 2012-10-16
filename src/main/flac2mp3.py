@@ -105,10 +105,12 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
 
 def run(mp3_target_path, flac_root_path, *flac_path_list):
     flac_files = set(find_files('.flac', *flac_path_list))
+    cpu_count = get_cpu_count()
+    LOGGER.info('found %d cpu(s)', cpu_count)
     LOGGER.info('found %d flac files', len(flac_files))
     LOGGER.info('transcoding files with command "%s"', LAME_COMMAND % ('file.flac', 'file.mp3'))
 
-    Pool(get_cpu_count()).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
+    Pool(cpu_count).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
 
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k,v = string_with_equal.split('=', 1)
