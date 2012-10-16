@@ -7,24 +7,30 @@ from itertools import repeat
 from logging import INFO
 import logging
 from multiprocessing import Pool
+import multiprocessing
 from posix import getcwd
 from struct import unpack
 import sys
 from genericpath import isdir
 import os
 from os.path import dirname, join
-from subprocess import call, check_output
+from subprocess import call
 import eyeD3
 from eyeD3.frames import ImageFrame
 
-VOBIS_COMMENT = 4
-
 __author__ = 'bruno thomas'
 
-LAME_COMMAND = 'flac -dcs %s | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2 - %s'
-POOL_SIZE = int(check_output('cat /proc/cpuinfo | grep processor | wc -l', shell=True))
 logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s')
 LOGGER = logging.getLogger('flac2mp3')
+
+LAME_COMMAND = 'flac -dcs %s | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2 - %s'
+VOBIS_COMMENT = 4
+
+def get_cpu_count():
+    try:
+        return multiprocessing.cpu_count()
+    except NotImplementedError:
+        return 1
 
 def transcode(flac_file, mp3_file):
     tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
@@ -102,7 +108,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
     LOGGER.info('found %d flac files', len(flac_files))
     LOGGER.info('transcoding files with command "%s"', LAME_COMMAND % ('file.flac', 'file.mp3'))
 
-    Pool(POOL_SIZE).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
+    Pool(get_cpu_count()).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
 
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k,v = string_with_equal.split('=', 1)
