@@ -45,7 +45,7 @@ def transcode(flac_file, mp3_file):
     tag.setGenre(tags['GENRE'])
     tag.setDate(tags['DATE'])
     if tags['DESCRIPTION']: tag.addComment(tags['DESCRIPTION'])
-    tag.addImage(ImageFrame.FRONT_COVER, dirname(flac_file) + "/cover.jpg")
+    tag.addImage(ImageFrame.FRONT_COVER, join(dirname(flac_file), "cover.jpg"))
     tag.update()
 
 class MetaflacNotFound(Exception):pass
