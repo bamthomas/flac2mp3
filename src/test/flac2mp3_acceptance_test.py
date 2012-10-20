@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import shutil
 import tempfile
-from flac2mp3 import find_files, run, transcode, get_flac_tags, get_vobis_comment_bloc
+from flac2mp3 import find_files, run, transcode, get_flac_tags, get_vobis_comment_bloc, which
 from os.path import join
 import subprocess
 from os.path import dirname, isdir
@@ -11,6 +11,7 @@ import binascii
 import eyeD3
 
 __author__ = 'bruno thomas'
+
 
 
 class TestFlac2Mp3Acceptance(unittest.TestCase):
@@ -60,6 +61,10 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             actual = list(find_files(".mp3", tmp))
 
             self.assertItemsEqual(actual, expected)
+
+    def test_which(self):
+        self.assertEquals('/bin/ls', which('ls'))
+        self.assertIsNone(which('blahblah'))
 
     def create_flac_file(self, flac_file):
         with open('/tmp/tmp.wav', 'wb') as mp3:

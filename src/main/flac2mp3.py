@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
-usage message.
+To use this script you'll need flac and lame
+Usage :
+flac2mp3 [origin directories] mp3/repository/destination
 """
 import getopt
 from itertools import repeat
@@ -10,6 +12,7 @@ from multiprocessing import Pool
 import multiprocessing
 from posix import getcwd
 from struct import unpack
+import subprocess
 import sys
 from genericpath import isdir
 import os
@@ -103,6 +106,19 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
     except Exception as e:
         LOGGER.error('error during the transcoding of %s : %s' % (flac_file, e))
 
+def which(program):
+    def is_exe(fpath): return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
+
 def run(mp3_target_path, flac_root_path, *flac_path_list):
     flac_files = set(find_files('.flac', *flac_path_list))
     cpu_count = get_cpu_count()
@@ -129,15 +145,20 @@ def main(argv):
                 mp3_target_path = args.pop()
             else:
                 mp3_target_path = './'
-
         except getopt.error, msg:
             raise Usage(msg)
+
         for opt, arg in opts:
             if opt in ("-h", "--help"):
                 print __doc__
                 return 0
 
-        LOGGER.setLevel(INFO)
+        if not which('lame'):
+            LOGGER.fatal("Cannot find lame. Please install lame: http://lame.sourceforge.net/")
+            return 3
+        if not which('flac'):
+            LOGGER.fatal("Cannot find flac. Please install flac: http://flac.sourceforge.net/")
+            return 3
 
         run(mp3_target_path, getcwd(), *args)
     except Usage, err:
@@ -146,4 +167,5 @@ def main(argv):
         return 2
 
 if __name__ == "__main__":
+    LOGGER.setLevel(INFO)
     sys.exit(main(sys.argv))
