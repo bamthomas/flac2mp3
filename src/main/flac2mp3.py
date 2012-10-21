@@ -39,17 +39,17 @@ def transcode(flac_file, mp3_file):
     tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
     call(LAME_COMMAND % (flac_file, mp3_file), shell=True)
-    tag = eyeD3.Tag(mp3_file)
-    tag.link(mp3_file)
-    tag.setArtist(tags['ARTIST'])
-    tag.setTrackNum([tags['TRACKNUMBER'], tags['TRACKTOTAL']])
-    tag.setAlbum(tags['ALBUM'])
-    tag.setTitle(tags['TITLE'])
-    tag.setGenre(tags['GENRE'])
-    tag.setDate(tags['DATE'])
-    if tags['DESCRIPTION']: tag.addComment(tags['DESCRIPTION'])
-    tag.addImage(ImageFrame.FRONT_COVER, join(dirname(flac_file), "cover.jpg"))
-    tag.update()
+    eyed3_tag = eyeD3.Tag(mp3_file)
+    eyed3_tag.link(mp3_file)
+    if 'ARTIST' in tags: eyed3_tag.setArtist(tags['ARTIST'])
+    if 'ALBUM' in tags: eyed3_tag.setAlbum(tags['ALBUM'])
+    if 'TITLE' in tags: eyed3_tag.setTitle(tags['TITLE'])
+    if 'DESCRIPTION' in tags: eyed3_tag.addComment(tags['DESCRIPTION'])
+    eyed3_tag.setTrackNum([tags['TRACKNUMBER'], tags['TRACKTOTAL']])
+    eyed3_tag.setGenre(tags['GENRE'])
+    eyed3_tag.setDate(tags['DATE'])
+    eyed3_tag.addImage(ImageFrame.FRONT_COVER, join(dirname(flac_file), "cover.jpg"))
+    eyed3_tag.update()
 
 class MetaflacNotFound(Exception):pass
 
@@ -70,6 +70,11 @@ def get_vobis_comment_bloc(flac_file):
         if block_type is not VOBIS_COMMENT: raise MetaflacNotFound()
     return block
 
+class tags(dict):
+    def __init__(self, seq=None, **kwargs):
+        super(tags, self).__init__(seq, **kwargs)
+    def __missing__(self, _):return None
+
 def get_flac_tags(vobis_comment_block):
     vendor_length, = unpack('I', vobis_comment_block[0:4])
     offset = 4 + vendor_length
@@ -81,7 +86,7 @@ def get_flac_tags(vobis_comment_block):
         offset += 4
         comments.append(vobis_comment_block[offset:offset + length])
         offset += length
-    return dict(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
+    return tags(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
 def find_files(extension, *root_dirs):
     for root_dir in root_dirs:

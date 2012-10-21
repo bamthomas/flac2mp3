@@ -30,9 +30,15 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assertEquals('Electronic', tag.getGenre().getName())
         self.assertEquals('2008', (tag.getDate()[0]).getYear())
 
+    def test_one_file_one_tag(self):
+        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'artist')
+        self.assert_tag_present_in_mp3('getTitle', 'TITLE', 'title')
+        self.assert_tag_present_in_mp3('getAlbum', 'ALBUM', 'album')
+
     def test_get_flac_tags(self):
         self.create_flac_file('/tmp/tmp.flac')
-        self.assertEquals({'ALBUM': 'album!', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008', 'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1'},
+        self.assertEquals({'ALBUM': 'album!', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
+                           'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1'},
             get_flac_tags(get_vobis_comment_bloc('/tmp/tmp.flac')))
 
     def test_find_flac_files(self):
@@ -66,6 +72,13 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assertEquals('/bin/ls', which('ls'))
         self.assertEquals('/bin/ls', which('/bin/ls'))
         self.assertIsNone(which('blahblah'))
+
+    def assert_tag_present_in_mp3(self, eyed3_method_name, flac_key, flac_value):
+        self.create_flac_file('/tmp/tmp.flac', {flac_key: flac_value})
+        transcode('/tmp/tmp.flac', '/tmp/tmp.mp3')
+        tag = eyeD3.Tag()
+        tag.link('/tmp/tmp.mp3')
+        self.assertEquals(flac_value, getattr(tag, eyed3_method_name)())
 
     def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album!', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description'}):
         with open('/tmp/tmp.wav', 'wb') as mp3:
