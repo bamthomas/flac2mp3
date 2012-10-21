@@ -7,11 +7,12 @@ The mp3 generated will be itunes compliant (accents, covers) and encoded with la
 lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100
 
 # Why another flac2mp3 command ?
-Because I didn't find one that included the cover and that did not break my accents on itunes. Cf http://www.barreverte.fr/ou-sont-mes-accents-dans-itunes (en french)
+Because I didn't find one that included the cover and that did not break my accents on itunes. Cf http://www.barreverte.fr/ou-sont-mes-accents-dans-itunes (sorry, in french).
 Second because I wanted it to be robust (for example with comments on multiple lines, shell caracters in tags like `!*$`) and unit tested.
 
 # Compatibility and dependencies
 It works with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard)
+
 Depends on `eyeD3`, `lame`, and `flac`.
 
 # Usage
@@ -23,14 +24,14 @@ Depends on `eyeD3`, `lame`, and `flac`.
 
 for example, if you have :
 
-/path/to/flac/artist1/album1/song1.flac
-             |              |song2.flac
-             |              |song3.flac
-             |              |cover.jpg
-             |
-             /artist2/album1/song1.flac
-                            |song2.flac
-                            |cover.jpg
+    /path/to/flac/artist1/album1/song1.flac
+                 |              |song2.flac
+                 |              |song3.flac
+                 |              |cover.jpg
+                 |
+                 /artist2/album1/song1.flac
+                                |song2.flac
+                                |cover.jpg
 
 
 1) if you do in flac directory :
@@ -38,36 +39,36 @@ $ `flac2mp3.py ../mp3`
 
 you'll have : 
 
-/path/to/flac/artist1/album1/song1.flac
-        |    |              |song2.flac
-        |    |              |song3.flac
-        |    |              |cover.jpg
-        |    |      
-        |    /artist2/album1/song1.flac
-        |                   |song2.flac
-        |                   |cover.jpg
-        |
-        /mp3/artist1/album1/song1.mp3
-            |              |song2.mp3
-            |              |song3.mp3
+    /path/to/flac/artist1/album1/song1.flac
+            |    |              |song2.flac
+            |    |              |song3.flac
+            |    |              |cover.jpg
+            |    |
+            |    /artist2/album1/song1.flac
+            |                   |song2.flac
+            |                   |cover.jpg
             |
-            /artist2/album1/song1.mp3
-                           |song2.mp3
+            /mp3/artist1/album1/song1.mp3
+                |              |song2.mp3
+                |              |song3.mp3
+                |
+                /artist2/album1/song1.mp3
+                               |song2.mp3
 
 2) if you do in flac directory : 
 $ `flac2mp3.py artist2 ../mp3`
 
 you'll have :
 
-/path/to/flac/artist1/album1/song1.flac
-        |    |              |song2.flac
-        |    |              |song3.flac
-        |    |
-        |    /artist2/album1/song1.flac
-        |                   |song2.flac
-        |
-        /mp3/artist2/album1/song1.mp3
-                           |song2.mp3
+    /path/to/flac/artist1/album1/song1.flac
+            |    |              |song2.flac
+            |    |              |song3.flac
+            |    |
+            |    /artist2/album1/song1.flac
+            |                   |song2.flac
+            |
+            /mp3/artist2/album1/song1.mp3
+                               |song2.mp3
 
 This is a work in progress.
 
