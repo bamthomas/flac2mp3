@@ -1,14 +1,21 @@
-This is a little repo with 2 utility scripts for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
+# Description
+This is 2 utility scripts for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
 
 The flac tags will be added to the mp3 files ut8 encoded, and if a cover.jpg file is found in the flac files directory it will be added to the mp3.
 
 The mp3 generated will be itunes compliant (accents, covers) and encoded with lame command : 
 lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100
 
-It works with linux, eyeD3, lame, and flac.
+# Why another flac2mp3 command ?
+Because I didn't find one that included the cover and that did not break my accents on itunes. Cf http://www.barreverte.fr/ou-sont-mes-accents-dans-itunes (en french)
+Second because I wanted it to be robust (for example with comments on multiple lines, shell caracters in tags like `!*$`) and unit tested.
 
-Usage : 
-flac2mp3 [origin directories] mp3/repository/destination
+# Compatibility and dependencies
+It works with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard)
+Depends on `eyeD3`, `lame`, and `flac`.
+
+# Usage
+`flac2mp3 [origin directories] mp3/repository/destination`
 
 - If one argument is given it is the destination : it will transcode flac files found under the current directory and put mp3 files in the destination directory with the same directory structure.
 - If more than one argument is given, it will transcode flac files from the given directories to the destination.
@@ -27,7 +34,7 @@ for example, if you have :
 
 
 1) if you do in flac directory :
-$ flac2mp3.py ../mp3
+$ `flac2mp3.py ../mp3`
 
 you'll have : 
 
@@ -48,7 +55,7 @@ you'll have :
                            |song2.mp3
 
 2) if you do in flac directory : 
-$ flac2mp3.py artist2 ../mp3
+$ `flac2mp3.py artist2 ../mp3`
 
 you'll have :
 
@@ -64,9 +71,9 @@ you'll have :
 
 This is a work in progress.
 
-==========================
-To develop and test, use your favorite IDE.
+# development
+To develop and test, use your favorite IDE (mine is pycharm).
 
 With bash to run the test you can do :
-$ PYTHONPATH=src/main/:src/test/ python -m unittest flac2mp3_test flac2mp3_acceptance_test
+`$ PYTHONPATH=src/main/:src/test/ python -m unittest flac2mp3_test flac2mp3_acceptance_test`
 
