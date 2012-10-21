@@ -12,7 +12,6 @@ from multiprocessing import Pool
 import multiprocessing
 from posix import getcwd
 from struct import unpack
-import subprocess
 import sys
 from genericpath import isdir
 import os
@@ -48,7 +47,8 @@ def transcode(flac_file, mp3_file):
     eyed3_tag.setTrackNum([tags['TRACKNUMBER'], tags['TRACKTOTAL']])
     eyed3_tag.setGenre(tags['GENRE'])
     eyed3_tag.setDate(tags['DATE'])
-    eyed3_tag.addImage(ImageFrame.FRONT_COVER, join(dirname(flac_file), "cover.jpg"))
+    cover_file = join(dirname(flac_file), "cover.jpg")
+    if os.path.isfile(cover_file): eyed3_tag.addImage(ImageFrame.FRONT_COVER, cover_file)
     eyed3_tag.update()
 
 class MetaflacNotFound(Exception):pass
