@@ -64,15 +64,16 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
     def test_which(self):
         self.assertEquals('/bin/ls', which('ls'))
+        self.assertEquals('/bin/ls', which('/bin/ls'))
         self.assertIsNone(which('blahblah'))
 
-    def create_flac_file(self, flac_file):
+    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album!', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description'}):
         with open('/tmp/tmp.wav', 'wb') as mp3:
             mp3.write(binascii.a2b_hex("524946462408000057415645666d7420100000000100020022560000885801000400100064617461000800000000000024171ef33c133c1416f918f934e723a63cf224f211ce1a0d"))
 
         open(dirname(flac_file) + "/cover.jpg", 'w').close()
-
-        flac_cmde = u'/usr/bin/flac -V --totally-silent -f -T ARTIST=artist -T TRACKNUMBER=1 -T TRACKTOTAL=15 -T ALBUM=album! -T TITLE=title -T GENRE=Electronic -T DATE=2008 -T DESCRIPTION=description /tmp/tmp.wav -o %s' % flac_file
+        command_tags = ' '.join(['-T %s=%s' % (k,v) for (k,v) in tags.iteritems()])
+        flac_cmde = u'/usr/bin/flac -V --totally-silent -f %s /tmp/tmp.wav -o %s' % (command_tags, flac_file)
         subprocess.call(flac_cmde.split(' '))
 
 
