@@ -4,7 +4,7 @@ This is 2 utility scripts for transcoding flac files into mp3 files keeping cove
 The flac tags will be added to the mp3 files ut8 encoded, and if a cover.jpg file is found in the flac files directory it will be added to the mp3.
 
 The mp3 generated will be itunes compliant (accents, covers) and encoded with lame command : 
-lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100
+`lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100`
 
 # Why another flac2mp3 command ?
 Because I didn't find one that included the cover and that did not break my accents on itunes. Cf http://www.barreverte.fr/ou-sont-mes-accents-dans-itunes (sorry, in french).
