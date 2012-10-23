@@ -16,7 +16,7 @@ import sys
 from genericpath import isdir
 import os
 from os.path import dirname, join
-from subprocess import call
+from subprocess import call, Popen, PIPE
 import eyeD3
 from eyeD3.frames import ImageFrame
 
@@ -25,7 +25,8 @@ __author__ = 'bruno thomas'
 logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s')
 LOGGER = logging.getLogger('flac2mp3')
 
-LAME_COMMAND = 'flac -dcs %s | lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2 - %s'
+LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2 - %s'
+FLAC_COMMAND = 'flac -dcs %s'
 VOBIS_COMMENT = 4
 
 def get_cpu_count():
@@ -37,7 +38,9 @@ def get_cpu_count():
 def transcode(flac_file, mp3_file):
     tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
-    call(LAME_COMMAND % (flac_file, mp3_file), shell=True)
+    flac_command = Popen((FLAC_COMMAND % flac_file).split(' '), stdout=PIPE)
+    lame_command=Popen((LAME_COMMAND % mp3_file).split(' '), stdin=flac_command.stdout)
+    lame_command.wait()
     eyed3_tag = eyeD3.Tag(mp3_file)
     eyed3_tag.link(mp3_file)
     if 'ARTIST' in tags: eyed3_tag.setArtist(tags['ARTIST'])
@@ -128,7 +131,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
     cpu_count = get_cpu_count()
     LOGGER.info('found %d cpu(s)', cpu_count)
     LOGGER.info('found %d flac files', len(flac_files))
-    LOGGER.info('transcoding files with command "%s"', LAME_COMMAND % ('file.flac', 'file.mp3'))
+    LOGGER.info('transcoding files with command "%s" | %s', FLAC_COMMAND % 'file.flac',LAME_COMMAND  % 'file.mp3')
 
     Pool(cpu_count).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
 
