@@ -26,7 +26,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag.link(mp3_file)
             self.assertEquals(u"artist", tag.getArtist())
             self.assertEquals((1,15), tag.getTrackNum())
-            self.assertEquals(u"album!", tag.getAlbum())
+            self.assertEquals(u"album", tag.getAlbum())
             self.assertEquals(u"title", tag.getTitle())
             self.assertEquals('description', tag.getComments()[0].comment)
             self.assertEquals('Electronic', tag.getGenre().getName())
@@ -37,6 +37,9 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assert_tag_present_in_mp3('getTitle', 'TITLE', 'title')
         self.assert_tag_present_in_mp3('getAlbum', 'ALBUM', 'album')
 
+    def test_one_file_one_tag_with_bash_special_chars(self):
+        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', '!!! money $ stars * and percentages %')
+
     def test_transcode_without_cover(self):
         with TemporaryDirectory() as tmp:
             self.create_flac_file(join(tmp, 'tmp.flac'), cover=None)
@@ -46,7 +49,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
     def test_get_flac_tags(self):
         with TemporaryDirectory() as tmp:
             self.create_flac_file(join(tmp, 'tmp.flac'))
-            self.assertEquals({'ALBUM': 'album!', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
+            self.assertEquals({'ALBUM': 'album', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
                                'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1'},
                 get_flac_tags(get_vobis_comment_bloc(join(tmp, 'tmp.flac'))))
 
@@ -92,14 +95,17 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag.link(mp3_file)
             self.assertEquals(flac_value, getattr(tag, eyed3_method_name)())
 
-    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album!', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description'}, cover='cover.jpg'):
+    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description'}, cover='cover.jpg'):
         with open('/tmp/tmp.wav', 'wb') as mp3:
             mp3.write(binascii.a2b_hex("524946462408000057415645666d7420100000000100020022560000885801000400100064617461000800000000000024171ef33c133c1416f918f934e723a63cf224f211ce1a0d"))
 
         if cover: open(join(dirname(flac_file) ,cover), 'w').close()
-        command_tags = ' '.join(['-T %s=%s' % (k,v) for (k,v) in tags.iteritems()])
-        flac_cmde = u'/usr/bin/flac -V --totally-silent -f %s /tmp/tmp.wav -o %s' % (command_tags, flac_file)
-        subprocess.call(flac_cmde.split(' '))
+        command_tags = list()
+        for (k,v) in tags.iteritems():
+            command_tags.append('-T')
+            command_tags.append('%s=%s' % (k,v))
+        flac_cmde = '/usr/bin/flac -V --totally-silent -f'.split(' ')  + command_tags + '/tmp/tmp.wav -o'.split(' ') + [flac_file]
+        subprocess.call(flac_cmde)
 
 
 class TemporaryDirectory(object):
