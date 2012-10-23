@@ -1,5 +1,5 @@
 # Description
-This is 2 utility scripts for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
+This is 1 utility scripts (in `src/main`) for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
 
 The flac tags will be added to the mp3 files ut8 encoded, and if a cover.jpg file is found in the flac files directory it will be added to the mp3.
 
@@ -13,7 +13,9 @@ Second because I wanted it to be robust (for example with comments on multiple l
 # Compatibility and dependencies
 It works with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard)
 
-Depends on `eyeD3`, `lame`, and `flac`.
+Depends on `lame` and `flac` for the runtime.
+
+Depends on `eyeD3` for unit testing and developing.
 
 # Usage
 `flac2mp3 [origin directories] mp3/repository/destination`

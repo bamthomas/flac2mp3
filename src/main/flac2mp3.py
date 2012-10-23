@@ -30,7 +30,7 @@ class none_if_missing(dict):
     def __init__(self, seq=None, **kwargs): super(none_if_missing, self).__init__(seq, **kwargs)
     def __missing__(self, _):return None
 
-vobis_comments_lame_opts_map=none_if_missing({
+vobis_comments_lame_opts_map = none_if_missing({
    'ARTIST'     : '--ta',
    'ALBUM'      : '--tl',
    'TITLE'      : '--tt',
@@ -51,7 +51,7 @@ def transcode(flac_file, mp3_file):
     tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
 
-    mp3_tags = {vobis_comments_lame_opts_map[k]: v for k,v in tags.iteritems()}
+    mp3_tags = {vobis_comments_lame_opts_map[k]: v for k,v in tags.items()}
     if None in mp3_tags: del mp3_tags[None]
     if 'total' in mp3_tags:
         mp3_tags['--tn'] = '%s/%s' % (tags['TRACKNUMBER'], mp3_tags.pop('total'))
@@ -67,7 +67,6 @@ def transcode(flac_file, mp3_file):
     flac_command = Popen(('flac -dcs %s' % flac_file).split((' ')), stdout=PIPE)
     lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
-
 
 class MetaflacNotFound(Exception):pass
 
