@@ -48,27 +48,25 @@ def get_cpu_count():
         return 1
 
 def transcode(flac_file, mp3_file):
-    tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
-    LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
+    flac_tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
+    LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, flac_tags['TITLE'], flac_tags['ARTIST'], flac_tags['TRACKNUMBER'], flac_tags['TRACKTOTAL'])
 
-    mp3_tags = {vobis_comments_lame_opts_map[k]: v for k,v in tags.items()}
-    if None in mp3_tags: del mp3_tags[None]
-    if 'total' in mp3_tags:
-        mp3_tags['--tn'] = '%s/%s' % (tags['TRACKNUMBER'], mp3_tags.pop('total'))
+    lame_tags = {vobis_comments_lame_opts_map[k]: v for k,v in flac_tags.items()}
+    if None in lame_tags: del lame_tags[None]
+    if 'total' in lame_tags:
+        lame_tags['--tn'] = '%s/%s' % (flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
     cover_file = join(dirname(flac_file), "cover.jpg")
-    if os.path.isfile(cover_file): mp3_tags['--ti'] = cover_file
+    if os.path.isfile(cover_file): lame_tags['--ti'] = cover_file
 
     lame_command_list = LAME_COMMAND.split(' ')
-    lame_command_list.extend([arg for k,v in mp3_tags.items() for arg in (k,v)])
+    lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
     lame_command_list.append('-')
     lame_command_list.append(mp3_file)
 
     flac_command = Popen(('flac -dcs %s' % flac_file).split((' ')), stdout=PIPE)
     lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
-
-class MetaflacNotFound(Exception):pass
 
 def get_vobis_comment_bloc(flac_file):
     block = None
@@ -84,7 +82,9 @@ def get_vobis_comment_bloc(flac_file):
             last_block = ord(last_block_and_block_type) & 0x80 is 0x80
             block_length, = unpack('>i', '\x00' + flac.read(3))
             block = flac.read(int(block_length))
-        if block_type is not VOBIS_COMMENT: raise MetaflacNotFound()
+
+        if block_type is not VOBIS_COMMENT:
+            raise RuntimeError('cannot find vobis comment block in %s' % flac_file)
     return block
 
 def get_flac_tags(vobis_comment_block):
