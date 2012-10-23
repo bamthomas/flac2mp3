@@ -16,9 +16,7 @@ import sys
 from genericpath import isdir
 import os
 from os.path import dirname, join
-from subprocess import call, Popen, PIPE
-import eyeD3
-from eyeD3.frames import ImageFrame
+from subprocess import Popen, PIPE
 
 __author__ = 'bruno thomas'
 
@@ -38,21 +36,28 @@ def get_cpu_count():
 def transcode(flac_file, mp3_file):
     tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
+
+    mp3_tags = list()
+    if 'ARTIST' in tags: mp3_tags += ['--ta', tags['ARTIST']]
+    if 'ALBUM' in tags: mp3_tags += ['--tl', tags['ALBUM']]
+    if 'TITLE' in tags: mp3_tags += ['--tt', tags['TITLE']]
+    if 'DESCRIPTION' in tags: mp3_tags += ['--tc', tags['DESCRIPTION']]
+    if 'TRACKNUMBER' in tags:
+        if 'TRACKTOTAL' in tags:
+            mp3_tags += ['--tn', '%s/%s' % (tags['TRACKNUMBER'], tags['TRACKTOTAL'])]
+        else:
+            mp3_tags += ['--tn', tags['TRACKNUMBER']]
+
+    if 'GENRE' in tags: mp3_tags += ['--tg', tags['GENRE']]
+    if 'DATE' in tags: mp3_tags += ['--ty', tags['DATE']]
+
+    cover_file = join(dirname(flac_file), "cover.jpg")
+    if os.path.isfile(cover_file): mp3_tags += ['--ti', cover_file]
+
     flac_command = Popen((FLAC_COMMAND % flac_file).split(' '), stdout=PIPE)
     lame_command=Popen((LAME_COMMAND % mp3_file).split(' '), stdin=flac_command.stdout)
     lame_command.wait()
-    eyed3_tag = eyeD3.Tag(mp3_file)
-    eyed3_tag.link(mp3_file)
-    if 'ARTIST' in tags: eyed3_tag.setArtist(tags['ARTIST'])
-    if 'ALBUM' in tags: eyed3_tag.setAlbum(tags['ALBUM'])
-    if 'TITLE' in tags: eyed3_tag.setTitle(tags['TITLE'])
-    if 'DESCRIPTION' in tags: eyed3_tag.addComment(tags['DESCRIPTION'])
-    eyed3_tag.setTrackNum([tags['TRACKNUMBER'], tags['TRACKTOTAL']])
-    eyed3_tag.setGenre(tags['GENRE'])
-    eyed3_tag.setDate(tags['DATE'])
-    cover_file = join(dirname(flac_file), "cover.jpg")
-    if os.path.isfile(cover_file): eyed3_tag.addImage(ImageFrame.FRONT_COVER, cover_file)
-    eyed3_tag.update()
+
 
 class MetaflacNotFound(Exception):pass
 

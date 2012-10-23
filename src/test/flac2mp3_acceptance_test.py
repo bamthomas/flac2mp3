@@ -104,7 +104,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         for (k,v) in tags.iteritems():
             command_tags.append('-T')
             command_tags.append('%s=%s' % (k,v))
-        flac_cmde = '/usr/bin/flac -V --totally-silent -f'.split(' ')  + command_tags + '/tmp/tmp.wav -o'.split(' ') + [flac_file]
+        flac_cmde = '/usr/bin/flac -V --totally-silent -f'.split(' ') + '/tmp/tmp.wav -o'.split(' ') + [flac_file]  + command_tags
         subprocess.call(flac_cmde)
 
 
