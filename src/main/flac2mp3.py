@@ -2,7 +2,7 @@
 """
 To use this script you'll need flac and lame
 Usage :
-flac2mp3 [origin directories] mp3/repository/destination
+flac2mp3 [origin directories containing flac files] mp3/repository/destination
 """
 import getopt
 from itertools import repeat
@@ -156,10 +156,6 @@ def main(argv):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "h", ["help"])
-            if args:
-                mp3_target_path = args.pop()
-            else:
-                mp3_target_path = './'
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -167,6 +163,11 @@ def main(argv):
             if opt in ("-h", "--help"):
                 print __doc__
                 return 0
+
+        if args:
+            mp3_target_path = args.pop()
+        else:
+            raise Usage('no mp3 target directory given')
 
         if not which('lame'):
             LOGGER.fatal("Cannot find lame. Please install lame: http://lame.sourceforge.net/")
@@ -176,9 +177,11 @@ def main(argv):
             return 3
 
         run(mp3_target_path, getcwd(), *args)
+        LOGGER.info('transcoding done, exiting normally')
+        return 0
     except Usage, err:
         print >> sys.stderr, err.msg
-        print >> sys.stderr, "for help use --help"
+        print >> sys.stderr, "for help use -h or --help"
         return 2
 
 if __name__ == "__main__":
