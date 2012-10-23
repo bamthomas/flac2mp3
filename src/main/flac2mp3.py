@@ -23,8 +23,7 @@ __author__ = 'bruno thomas'
 logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s')
 LOGGER = logging.getLogger('flac2mp3')
 
-LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2 - %s'
-FLAC_COMMAND = 'flac -dcs %s'
+LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2'
 VOBIS_COMMENT = 4
 
 def get_cpu_count():
@@ -42,20 +41,24 @@ def transcode(flac_file, mp3_file):
     if 'ALBUM' in tags: mp3_tags += ['--tl', tags['ALBUM']]
     if 'TITLE' in tags: mp3_tags += ['--tt', tags['TITLE']]
     if 'DESCRIPTION' in tags: mp3_tags += ['--tc', tags['DESCRIPTION']]
+    if 'GENRE' in tags: mp3_tags += ['--tg', tags['GENRE']]
+    if 'DATE' in tags: mp3_tags += ['--ty', tags['DATE']]
     if 'TRACKNUMBER' in tags:
         if 'TRACKTOTAL' in tags:
             mp3_tags += ['--tn', '%s/%s' % (tags['TRACKNUMBER'], tags['TRACKTOTAL'])]
         else:
             mp3_tags += ['--tn', tags['TRACKNUMBER']]
 
-    if 'GENRE' in tags: mp3_tags += ['--tg', tags['GENRE']]
-    if 'DATE' in tags: mp3_tags += ['--ty', tags['DATE']]
-
     cover_file = join(dirname(flac_file), "cover.jpg")
-    if os.path.isfile(cover_file): mp3_tags += ['--ti', cover_file]
+#    if os.path.isfile(cover_file): mp3_tags += ['--ti', cover_file]
 
-    flac_command = Popen((FLAC_COMMAND % flac_file).split(' '), stdout=PIPE)
-    lame_command=Popen((LAME_COMMAND % mp3_file).split(' '), stdin=flac_command.stdout)
+    lame_command_list = LAME_COMMAND.split(' ')
+    lame_command_list.extend(mp3_tags)
+    lame_command_list.append('-')
+    lame_command_list.append(mp3_file)
+
+    flac_command = Popen(('flac -dcs %s' % flac_file).split((' ')), stdout=PIPE)
+    lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
 
 
@@ -136,7 +139,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
     cpu_count = get_cpu_count()
     LOGGER.info('found %d cpu(s)', cpu_count)
     LOGGER.info('found %d flac files', len(flac_files))
-    LOGGER.info('transcoding files with command "%s" | %s', FLAC_COMMAND % 'file.flac',LAME_COMMAND  % 'file.mp3')
+    LOGGER.info('transcoding files with command "%s"', LAME_COMMAND)
 
     Pool(cpu_count).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
 
