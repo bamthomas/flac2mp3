@@ -41,6 +41,9 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
     def test_one_file_one_tag_with_bash_special_chars(self):
         self.assert_tag_present_in_mp3('getArtist', 'ARTIST', '!!! money $ stars * and percentages %')
 
+    def test_one_file_one_tag_with_accent(self):
+        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', u'titre à accent')
+
     def test_transcode_without_cover(self):
         with TemporaryDirectory() as tmp:
             self.create_flac_file(join(tmp, 'tmp.flac'), cover=None)
