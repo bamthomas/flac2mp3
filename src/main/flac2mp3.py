@@ -26,6 +26,21 @@ LOGGER = logging.getLogger('flac2mp3')
 LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2'
 VOBIS_COMMENT = 4
 
+class none_if_missing(dict):
+    def __init__(self, seq=None, **kwargs): super(none_if_missing, self).__init__(seq, **kwargs)
+    def __missing__(self, _):return None
+
+vobis_comments_lame_opts_map=none_if_missing({
+   'ARTIST'     : '--ta',
+   'ALBUM'      : '--tl',
+   'TITLE'      : '--tt',
+   'DESCRIPTION': '--tc',
+   'GENRE'      : '--tg',
+   'DATE'       : '--ty',
+   'TRACKNUMBER': '--tn',
+   'TRACKTOTAL' : 'total'
+})
+
 def get_cpu_count():
     try:
         return multiprocessing.cpu_count()
@@ -36,24 +51,16 @@ def transcode(flac_file, mp3_file):
     tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, tags['TITLE'], tags['ARTIST'], tags['TRACKNUMBER'], tags['TRACKTOTAL'])
 
-    mp3_tags = list()
-    if 'ARTIST' in tags: mp3_tags += ['--ta', tags['ARTIST']]
-    if 'ALBUM' in tags: mp3_tags += ['--tl', tags['ALBUM']]
-    if 'TITLE' in tags: mp3_tags += ['--tt', tags['TITLE']]
-    if 'DESCRIPTION' in tags: mp3_tags += ['--tc', tags['DESCRIPTION']]
-    if 'GENRE' in tags: mp3_tags += ['--tg', tags['GENRE']]
-    if 'DATE' in tags: mp3_tags += ['--ty', tags['DATE']]
-    if 'TRACKNUMBER' in tags:
-        if 'TRACKTOTAL' in tags:
-            mp3_tags += ['--tn', '%s/%s' % (tags['TRACKNUMBER'], tags['TRACKTOTAL'])]
-        else:
-            mp3_tags += ['--tn', tags['TRACKNUMBER']]
+    mp3_tags = {vobis_comments_lame_opts_map[k]: v for k,v in tags.iteritems()}
+    if None in mp3_tags: del mp3_tags[None]
+    if 'total' in mp3_tags:
+        mp3_tags['--tn'] = '%s/%s' % (tags['TRACKNUMBER'], mp3_tags.pop('total'))
 
     cover_file = join(dirname(flac_file), "cover.jpg")
-    if os.path.isfile(cover_file): mp3_tags += ['--ti', cover_file]
+    if os.path.isfile(cover_file): mp3_tags['--ti'] = cover_file
 
     lame_command_list = LAME_COMMAND.split(' ')
-    lame_command_list.extend(mp3_tags)
+    lame_command_list.extend([arg for k,v in mp3_tags.items() for arg in (k,v)])
     lame_command_list.append('-')
     lame_command_list.append(mp3_file)
 
@@ -81,11 +88,6 @@ def get_vobis_comment_bloc(flac_file):
         if block_type is not VOBIS_COMMENT: raise MetaflacNotFound()
     return block
 
-class tags(dict):
-    def __init__(self, seq=None, **kwargs):
-        super(tags, self).__init__(seq, **kwargs)
-    def __missing__(self, _):return None
-
 def get_flac_tags(vobis_comment_block):
     vendor_length, = unpack('I', vobis_comment_block[0:4])
     offset = 4 + vendor_length
@@ -97,7 +99,7 @@ def get_flac_tags(vobis_comment_block):
         offset += 4
         comments.append(vobis_comment_block[offset:offset + length])
         offset += length
-    return tags(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
+    return none_if_missing(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
 def find_files(extension, *root_dirs):
     for root_dir in root_dirs:

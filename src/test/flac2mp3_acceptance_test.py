@@ -54,7 +54,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             self.create_flac_file(join(tmp, 'tmp.flac'))
             self.assertEquals({'ALBUM': 'album', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
-                               'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1'},
+                               'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1', 'COPYRIGHT': 'copyright'},
                 get_flac_tags(get_vobis_comment_bloc(join(tmp, 'tmp.flac'))))
 
     def test_find_flac_files(self):
@@ -99,7 +99,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag.link(mp3_file)
             self.assertEquals(flac_value, getattr(tag, eyed3_method_name)())
 
-    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description'}, cover='cover.jpg'):
+    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description','COPYRIGHT': 'copyright'}, cover='cover.jpg'):
         with open('/tmp/tmp.wav', 'wb') as mp3:
             mp3.write(binascii.a2b_hex("524946462408000057415645666d7420100000000100020022560000885801000400100064617461000800000000000024171ef33c133c1416f918f934e723a63cf224f211ce1a0d"))
 
