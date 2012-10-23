@@ -31,6 +31,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertEquals('description', tag.getComments()[0].comment)
             self.assertEquals('Electronic', tag.getGenre().getName())
             self.assertEquals('2008', (tag.getDate()[0]).getYear())
+            self.assertEquals(1, len(tag.getImages()))
 
     def test_one_file_one_tag(self):
         self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'artist')
@@ -99,7 +100,9 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         with open('/tmp/tmp.wav', 'wb') as mp3:
             mp3.write(binascii.a2b_hex("524946462408000057415645666d7420100000000100020022560000885801000400100064617461000800000000000024171ef33c133c1416f918f934e723a63cf224f211ce1a0d"))
 
-        if cover: open(join(dirname(flac_file) ,cover), 'w').close()
+        if cover:
+            with open(join(dirname(flac_file) ,cover), 'w') as jpg:
+                jpg.write(binascii.a2b_hex('FFD8FFE000104A464946'))
         command_tags = list()
         for (k,v) in tags.iteritems():
             command_tags.append('-T')

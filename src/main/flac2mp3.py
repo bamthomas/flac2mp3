@@ -50,7 +50,7 @@ def transcode(flac_file, mp3_file):
             mp3_tags += ['--tn', tags['TRACKNUMBER']]
 
     cover_file = join(dirname(flac_file), "cover.jpg")
-#    if os.path.isfile(cover_file): mp3_tags += ['--ti', cover_file]
+    if os.path.isfile(cover_file): mp3_tags += ['--ti', cover_file]
 
     lame_command_list = LAME_COMMAND.split(' ')
     lame_command_list.extend(mp3_tags)
