@@ -11,7 +11,7 @@ Because I didn't find one that included the cover and that did not break my acce
 Second because I wanted it to be robust (for example with comments on multiple lines, shell caracters in tags like `!*$`) and unit tested.
 
 # Compatibility and dependencies
-It works with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard)
+It has been tested with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard). It should work with Windows (I'll test it soon).
 
 Depends on `lame` and `flac` for the runtime.
 
