@@ -27,7 +27,6 @@ LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 
 VOBIS_COMMENT = 4
 
 class none_if_missing(dict):
-    def __init__(self, seq=None, **kwargs): super(none_if_missing, self).__init__(seq, **kwargs)
     def __missing__(self, _):return None
 
 vobis_comments_lame_opts_map = none_if_missing({
