@@ -17,6 +17,16 @@ Depends on `lame` and `flac` for the runtime.
 
 Depends on `eyeD3` for unit testing and developing.
 
+## Lame
+
+Is a well known tool for encoding mp3 files. You can dowload and compile the code from the lame site : http://lame.sourceforge.net/
+
+Binaries bundles can be found for mac and windows : http://rarewares.org/mp3-lame-bundle.php
+
+## Flac
+
+Is a free and open lossless audio codec. There are links to dowload pages in the official site : http://flac.sourceforge.net/download.html
+
 # Usage
 `flac2mp3 [origin directories] mp3/repository/destination`
 
