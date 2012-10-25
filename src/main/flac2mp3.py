@@ -25,6 +25,7 @@ LOGGER = logging.getLogger('flac2mp3')
 
 LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2'
 VOBIS_COMMENT = 4
+PICTURE = 6
 
 class none_if_missing(dict):
     def __missing__(self, _):return None
@@ -68,23 +69,45 @@ def transcode(flac_file, mp3_file):
     lame_command.wait()
 
 def get_vobis_comment_bloc(flac_file):
-    block = None
+    vobis_comment_block = None
+    image_block = None
     with open(flac_file, 'rb') as flac:
         assert 'fLaC' == flac.read(4)
 
         last_block = False
         block_type = 0
 
-        while not last_block and block_type is not VOBIS_COMMENT:
+        while not last_block:
             last_block_and_block_type = flac.read(1)
             block_type = ord(last_block_and_block_type) & 0x07
             last_block = ord(last_block_and_block_type) & 0x80 is 0x80
             block_length, = unpack('>i', '\x00' + flac.read(3))
             block = flac.read(int(block_length))
+            if block_type is VOBIS_COMMENT:
+                vobis_comment_block = block
+            if block_type is PICTURE:
+                image_block = block
 
-        if block_type is not VOBIS_COMMENT:
-            raise RuntimeError('cannot find vobis comment block in %s' % flac_file)
-    return block
+    if not vobis_comment_block:
+        raise RuntimeError('cannot find vobis comment vobis_comment_block in %s' % flac_file)
+
+    if image_block:
+        with open(join(dirname(flac_file), "cover.jpg"), 'wb') as cover:
+            cover.write(get_image_data(image_block))
+
+    return vobis_comment_block
+
+def get_image_data(image_block):
+    tmp, = unpack('>i', image_block[4:8])
+    mime_type_length = int(tmp)
+    offset = 8 + mime_type_length
+    tmp, = unpack('>i', image_block[offset:offset + 4])
+    description_length = int(tmp)
+    offset = offset + 4 + description_length
+    tmp, = unpack('>i', image_block[offset + 16:offset + 20])
+    image_lenth = int(tmp)
+    offset += 20
+    return image_block[offset:offset + image_lenth]
 
 def get_flac_tags(vobis_comment_block):
     vendor_length, = unpack('I', vobis_comment_block[0:4])

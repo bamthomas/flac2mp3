@@ -33,6 +33,18 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertEquals('2008', (tag.getDate()[0]).getYear())
             self.assertEquals(1, len(tag.getImages()))
 
+    def test_acceptance_one_file_with_embedd_cover(self):
+        with TemporaryDirectory() as tmp:
+            flac_file = join(tmp, 'tmp.flac')
+            mp3_file = join(tmp, 'tmp.mp3')
+            self.create_flac_file(flac_file, embbed=True)
+
+            transcode(flac_file, mp3_file)
+
+            tag = eyeD3.Tag()
+            tag.link(mp3_file)
+            self.assertEquals(1, len(tag.getImages()))
+
     def test_one_file_one_tag(self):
         self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'artist')
         self.assert_tag_present_in_mp3('getTitle', 'TITLE', 'title')
@@ -99,19 +111,27 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag.link(mp3_file)
             self.assertEquals(flac_value, getattr(tag, eyed3_method_name)())
 
-    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description','COPYRIGHT': 'copyright'}, cover='cover.jpg'):
+    def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description','COPYRIGHT': 'copyright'}, cover='cover.jpg', embbed=False):
         with open('/tmp/tmp.wav', 'wb') as mp3:
             mp3.write(binascii.a2b_hex("524946462408000057415645666d7420100000000100020022560000885801000400100064617461000800000000000024171ef33c133c1416f918f934e723a63cf224f211ce1a0d"))
 
-        if cover:
-            with open(join(dirname(flac_file) ,cover), 'w') as jpg:
-                jpg.write(binascii.a2b_hex('FFD8FFE000104A464946'))
         command_tags = list()
         for (k,v) in tags.iteritems():
             command_tags.append('-T')
             command_tags.append('%s=%s' % (k,v))
+        cover_path = None
+        if cover:
+            cover_path = join(dirname(flac_file), cover)
+            with open(cover_path, 'w') as jpg:
+                jpg.write(binascii.a2b_hex('FFD8FFE000104A464946'))
+            if embbed:
+                command_tags.append('--picture=|image/jpeg||1x1x24/173|%s' % cover_path)
+
         flac_cmde = '/usr/bin/flac -V --totally-silent -f'.split(' ') + '/tmp/tmp.wav -o'.split(' ') + [flac_file]  + command_tags
         subprocess.call(flac_cmde)
+
+        if cover and embbed :
+            os.remove(cover_path)
 
 
 class TemporaryDirectory(object):
@@ -119,4 +139,5 @@ class TemporaryDirectory(object):
         self.tempdir = tempfile.mkdtemp()
         return self.tempdir
     def __exit__(self, type, value, traceback):
-        shutil.rmtree(self.tempdir, ignore_errors = True)
+#        shutil.rmtree(self.tempdir, ignore_errors = True)
+        pass
