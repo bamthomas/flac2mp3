@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from struct import pack
 import unittest
-from flac2mp3 import get_mp3_filename, get_flac_tags
+from flac2mp3 import get_mp3_filename, VobisCommentParser
 import multiprocessing
 import flac2mp3
 
@@ -10,18 +10,22 @@ __author__ = 'bruno thomas'
 class TestFlac2Mp3(unittest.TestCase):
 
     def test_get_flac_tags_one_comment(self):
-        tags = get_flac_tags(vobis_block_header(1) + encode(b'TITRE=titre'))
+        tags = VobisCommentParser().get_flac_tags(vobis_block_header(1) + encode(b'TITRE=titre'))
         self.assertEquals({"TITRE" : "titre"}, tags)
 
     def test_get_flac_tags_two_comments_with_upper_and_lower_case(self):
-        self.assertEquals({"TITRE" : "titre", "ALBUM" : "album"}, get_flac_tags(vobis_block_header(2) + encode('TiTrE=titre') + encode('album=album')))
+        tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode('TiTrE=titre') + encode('album=album'))
+        self.assertEquals({"TITRE" : "titre", "ALBUM" : "album"}, tags)
 
     def test_get_flac_tags_two_comments_with_equal_sign_in_value(self):
-        self.assertEquals({"TITRE" : "e=mc2", "ALBUM" : "album"}, get_flac_tags(vobis_block_header(2) + encode('TiTrE=e=mc2') + encode('album=album')))
+        tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode('TiTrE=e=mc2') + encode('album=album'))
+        self.assertEquals({"TITRE" : "e=mc2", "ALBUM" : "album"}, tags)
 
     def test_get_flac_tags_two_comments_with_carriage_return(self):
-        self.assertEquals({"DESCRIPTION" : u"Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino", "TITRE" : "titre"},
-            get_flac_tags(vobis_block_header(2) + encode(u"DESCRIPTION=Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino") + encode(u"TITRE=titre")))
+        tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode(
+            u"DESCRIPTION=Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino") + encode(
+            u"TITRE=titre"))
+        self.assertEquals({"DESCRIPTION" : u"Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino", "TITRE" : "titre"}, tags)
 
     def test_get_cpu_count(self):
         def raise_NotImplementedError(): raise NotImplementedError

@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import shutil
 import tempfile
-from flac2mp3 import find_files, run, transcode, get_flac_tags, get_vobis_comment_bloc, which
+from flac2mp3 import find_files, run, transcode, which, VobisCommentParser
 import os
 from os.path import join
 import subprocess
@@ -65,9 +65,12 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
     def test_get_flac_tags(self):
         with TemporaryDirectory() as tmp:
             self.create_flac_file(join(tmp, 'tmp.flac'))
+
+            parser = VobisCommentParser().parse(join(tmp, 'tmp.flac'))
+
             self.assertEquals({'ALBUM': 'album', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
                                'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1', 'COPYRIGHT': 'copyright'},
-                get_flac_tags(get_vobis_comment_bloc(join(tmp, 'tmp.flac'))))
+                parser.flac_tags)
 
     def test_find_flac_files(self):
         with TemporaryDirectory() as tmp:

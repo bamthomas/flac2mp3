@@ -13,6 +13,7 @@ import multiprocessing
 from posix import getcwd
 from struct import unpack
 import sys
+from tempfile import mkstemp
 from genericpath import isdir
 import os
 from os.path import dirname, join
@@ -41,6 +42,56 @@ vobis_comments_lame_opts_map = none_if_missing({
    'TRACKTOTAL' : 'total'
 })
 
+class VobisCommentParser(object):
+    image = None
+    flac_tags = {}
+    def parse(self, flac_file):
+        with open(flac_file, 'rb') as flac:
+            assert 'fLaC' == flac.read(4)
+
+            last_block = False
+            block_type = 0
+
+            while not last_block:
+                last_block_and_block_type = flac.read(1)
+                block_type = ord(last_block_and_block_type) & 0x07
+                last_block = ord(last_block_and_block_type) & 0x80 is 0x80
+                block_length, = unpack('>i', '\x00' + flac.read(3))
+                block = flac.read(int(block_length))
+                if block_type is VOBIS_COMMENT:
+                    self.flac_tags = self.get_flac_tags(block)
+                if block_type is PICTURE:
+                    self.image = self.get_image_data(block)
+
+        if not self.flac_tags:
+            raise RuntimeError('cannot find vobis comment vobis_comment_block in %s' % flac_file)
+        return self
+
+    def get_image_data(self, image_block):
+        tmp, = unpack('>i', image_block[4:8])
+        mime_type_length = int(tmp)
+        offset = 8 + mime_type_length
+        tmp, = unpack('>i', image_block[offset:offset + 4])
+        description_length = int(tmp)
+        offset = offset + 4 + description_length
+        tmp, = unpack('>i', image_block[offset + 16:offset + 20])
+        image_lenth = int(tmp)
+        offset += 20
+        return image_block[offset:offset + image_lenth]
+
+    def get_flac_tags(self, vobis_comment_block):
+        vendor_length, = unpack('I', vobis_comment_block[0:4])
+        offset = 4 + vendor_length
+        user_comment_list_length, = unpack('I', vobis_comment_block[offset:offset + 4])
+        offset += 4
+        comments = list()
+        for vobis_comment_index in range(user_comment_list_length):
+            length, = unpack('I', vobis_comment_block[offset:offset + 4])
+            offset += 4
+            comments.append(vobis_comment_block[offset:offset + length])
+            offset += length
+        return none_if_missing(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
+
 def get_cpu_count():
     try:
         return multiprocessing.cpu_count()
@@ -48,16 +99,22 @@ def get_cpu_count():
         return 1
 
 def transcode(flac_file, mp3_file):
-    flac_tags = get_flac_tags(get_vobis_comment_bloc(flac_file))
-    LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, flac_tags['TITLE'], flac_tags['ARTIST'], flac_tags['TRACKNUMBER'], flac_tags['TRACKTOTAL'])
+    parser = VobisCommentParser().parse(flac_file)
+    LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
 
-    lame_tags = {vobis_comments_lame_opts_map[k]: v for k,v in flac_tags.items()}
+    lame_tags = {vobis_comments_lame_opts_map[k]: v for k,v in parser.flac_tags.items()}
     if None in lame_tags: del lame_tags[None]
     if 'total' in lame_tags:
-        lame_tags['--tn'] = '%s/%s' % (flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
+        lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
-    cover_file = join(dirname(flac_file), "cover.jpg")
-    if os.path.isfile(cover_file): lame_tags['--ti'] = cover_file
+    if parser.image:
+        fd, cover_file = mkstemp()
+        with open(cover_file, 'wb') as cover:
+            cover.write(parser.image)
+        lame_tags['--ti'] = cover_file
+    else:
+        cover_file = join(dirname(flac_file), "cover.jpg")
+        if os.path.isfile(cover_file): lame_tags['--ti'] = cover_file
 
     lame_command_list = LAME_COMMAND.split(' ')
     lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
@@ -67,60 +124,6 @@ def transcode(flac_file, mp3_file):
     flac_command = Popen(('flac -dcs %s' % flac_file).split((' ')), stdout=PIPE)
     lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
-
-def get_vobis_comment_bloc(flac_file):
-    vobis_comment_block = None
-    image_block = None
-    with open(flac_file, 'rb') as flac:
-        assert 'fLaC' == flac.read(4)
-
-        last_block = False
-        block_type = 0
-
-        while not last_block:
-            last_block_and_block_type = flac.read(1)
-            block_type = ord(last_block_and_block_type) & 0x07
-            last_block = ord(last_block_and_block_type) & 0x80 is 0x80
-            block_length, = unpack('>i', '\x00' + flac.read(3))
-            block = flac.read(int(block_length))
-            if block_type is VOBIS_COMMENT:
-                vobis_comment_block = block
-            if block_type is PICTURE:
-                image_block = block
-
-    if not vobis_comment_block:
-        raise RuntimeError('cannot find vobis comment vobis_comment_block in %s' % flac_file)
-
-    if image_block:
-        with open(join(dirname(flac_file), "cover.jpg"), 'wb') as cover:
-            cover.write(get_image_data(image_block))
-
-    return vobis_comment_block
-
-def get_image_data(image_block):
-    tmp, = unpack('>i', image_block[4:8])
-    mime_type_length = int(tmp)
-    offset = 8 + mime_type_length
-    tmp, = unpack('>i', image_block[offset:offset + 4])
-    description_length = int(tmp)
-    offset = offset + 4 + description_length
-    tmp, = unpack('>i', image_block[offset + 16:offset + 20])
-    image_lenth = int(tmp)
-    offset += 20
-    return image_block[offset:offset + image_lenth]
-
-def get_flac_tags(vobis_comment_block):
-    vendor_length, = unpack('I', vobis_comment_block[0:4])
-    offset = 4 + vendor_length
-    user_comment_list_length, = unpack('I', vobis_comment_block[offset:offset + 4])
-    offset += 4
-    comments = list()
-    for vobis_comment_index in range(user_comment_list_length):
-        length, = unpack('I', vobis_comment_block[offset:offset + 4])
-        offset += 4
-        comments.append(vobis_comment_block[offset:offset + length])
-        offset += length
-    return none_if_missing(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
 def find_files(extension, *root_dirs):
     for root_dir in root_dirs:
