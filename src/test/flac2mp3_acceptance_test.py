@@ -45,6 +45,16 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag.link(mp3_file)
             self.assertEquals(1, len(tag.getImages()))
 
+    def test_acceptance_one_file_with_spaces(self):
+        with TemporaryDirectory() as tmp:
+            flac_file = join(tmp, 'file with spaces.flac')
+            mp3_file = join(tmp, 'file with spaces.mp3')
+            self.create_flac_file(flac_file)
+
+            transcode(flac_file, mp3_file)
+
+            self.assertTrue(os.path.isfile(mp3_file))
+
     def test_one_file_one_tag(self):
         self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'artist')
         self.assert_tag_present_in_mp3('getTitle', 'TITLE', 'title')
