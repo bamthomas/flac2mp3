@@ -107,14 +107,14 @@ def transcode(flac_file, mp3_file):
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
-    if parser.image:
-        fd, cover_file = mkstemp()
-        with open(cover_file, 'wb') as cover:
-            cover.write(parser.image)
+    cover_file = join(dirname(flac_file), "cover.jpg")
+    if os.path.isfile(cover_file):
         lame_tags['--ti'] = cover_file
-    else:
-        cover_file = join(dirname(flac_file), "cover.jpg")
-        if os.path.isfile(cover_file): lame_tags['--ti'] = cover_file
+    elif parser.image:
+        fd, embed_cover_file = mkstemp()
+        with open(embed_cover_file, 'wb') as cover:
+            cover.write(parser.image)
+        lame_tags['--ti'] = embed_cover_file
 
     lame_command_list = LAME_COMMAND.split(' ')
     lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
