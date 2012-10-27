@@ -152,5 +152,4 @@ class TemporaryDirectory(object):
         self.tempdir = tempfile.mkdtemp()
         return self.tempdir
     def __exit__(self, type, value, traceback):
-#        shutil.rmtree(self.tempdir, ignore_errors = True)
-        pass
+        shutil.rmtree(self.tempdir, ignore_errors = True)

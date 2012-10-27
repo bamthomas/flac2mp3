@@ -169,6 +169,8 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 
     Pool(cpu_count).map(process_transcoding, zip(flac_files, repeat(flac_root_path), repeat(mp3_target_path)))
 
+    LOGGER.info('transcoding done, exiting normally')
+
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k,v = string_with_equal.split('=', 1)
     return k.upper(), v
@@ -203,7 +205,6 @@ def main(argv):
             return 3
 
         run(mp3_target_path, getcwd(), *args)
-        LOGGER.info('transcoding done, exiting normally')
         return 0
     except Usage, err:
         print >> sys.stderr, err.msg
