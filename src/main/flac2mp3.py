@@ -121,7 +121,7 @@ def transcode(flac_file, mp3_file):
     lame_command_list.append('-')
     lame_command_list.append(mp3_file)
 
-    flac_command = Popen(('flac -dcs %s' % flac_file).split((' ')), stdout=PIPE)
+    flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
     lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
 
@@ -146,7 +146,7 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
                 pass # other thread might have been faster
         transcode(flac_file, target_mp3_file)
     except Exception as e:
-        LOGGER.error('error during the transcoding of %s : %s' % (flac_file, e))
+        LOGGER.error('error during the transcoding of %r : %s' % (flac_file, e))
 
 def which(program):
     def is_exe(fpath): return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
