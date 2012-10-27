@@ -93,11 +93,31 @@ class VobisCommentParser(object):
             offset += length
         return none_if_missing(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
-def get_cpu_count():
-    try:
-        return multiprocessing.cpu_count()
-    except NotImplementedError:
-        return 1
+class CoverFile(object):
+    cover_file = None
+    tmp_prefix = 'flac2mp3'
+    tmp_suffix = '.tmp'
+    def __init__(self, flac_file, image_data):
+        cover_file = join(dirname(flac_file), "cover.jpg")
+        if os.path.isfile(cover_file):
+            self.cover_file = cover_file
+        elif image_data:
+            _,self.cover_file = mkstemp(prefix=self.tmp_prefix, suffix=self.tmp_suffix)
+            with open(self.cover_file, 'wb') as cover:
+                cover.write(image_data)
+
+    def exist(self):
+        return self.cover_file is not None
+
+    def path(self):
+        return self.cover_file
+
+    def delete_if_temporary(self):
+        if self.cover_file and \
+           os.path.basename(self.cover_file).startswith(self.tmp_prefix) and \
+           self.cover_file.endswith(self.tmp_suffix) :
+            os.remove(self.cover_file)
+
 
 def transcode(flac_file, mp3_file):
     parser = VobisCommentParser().parse(flac_file)
@@ -108,15 +128,8 @@ def transcode(flac_file, mp3_file):
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
-    cover_file = join(dirname(flac_file), "cover.jpg")
-    embed_cover_file = None
-    if os.path.isfile(cover_file):
-        lame_tags['--ti'] = cover_file
-    elif parser.image:
-        fd, embed_cover_file = mkstemp(prefix='flac2mp3', suffix='.tmp')
-        with open(embed_cover_file, 'wb') as cover:
-            cover.write(parser.image)
-        lame_tags['--ti'] = embed_cover_file
+    cover_file = CoverFile(flac_file, parser.image)
+    if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
 
     lame_command_list = LAME_COMMAND.split(' ')
     lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
@@ -126,7 +139,7 @@ def transcode(flac_file, mp3_file):
     flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
     lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
-    if embed_cover_file: os.remove(embed_cover_file)
+    cover_file.delete_if_temporary()
 
 def find_files(pattern, *root_dirs):
     regexp = re.compile(pattern)
@@ -163,6 +176,12 @@ def which(program):
             exe_file = os.path.join(path, program)
             if is_exe(exe_file):
                 return exe_file
+
+def get_cpu_count():
+    try:
+        return multiprocessing.cpu_count()
+    except NotImplementedError:
+        return 1
 
 def run(mp3_target_path, flac_root_path, *flac_path_list):
     flac_files = set(find_files('.*\.flac', *flac_path_list))
