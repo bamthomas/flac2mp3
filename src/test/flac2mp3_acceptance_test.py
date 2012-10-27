@@ -33,7 +33,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertEquals('2008', (tag.getDate()[0]).getYear())
             self.assertEquals(1, len(tag.getImages()))
 
-    def test_acceptance_one_file_with_embedd_cover(self):
+    def test_acceptance_one_file_with_embedded_cover(self):
         with TemporaryDirectory() as tmp:
             flac_file = join(tmp, 'tmp.flac')
             mp3_file = join(tmp, 'tmp.mp3')
@@ -44,6 +44,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag = eyeD3.Tag()
             tag.link(mp3_file)
             self.assertEquals(1, len(tag.getImages()))
+            self.assertEquals(0, len(set(find_files('flac2mp3.*\.tmp', tempfile.gettempdir()))))
 
     def test_acceptance_one_file_with_spaces(self):
         with TemporaryDirectory() as tmp:
@@ -90,8 +91,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             for file in ('/r1/f11.flac', '/r1/f12.flac', '/r2/r21/f21.flac'): open(tmp + file, 'w').close()
             liste_attendue = [tmp + '/r1/f11.flac', tmp + '/r1/f12.flac', tmp + '/r2/r21/f21.flac']
 
-            self.assertItemsEqual(liste_attendue, list(find_files(".flac", tmp)))
-            self.assertItemsEqual(liste_attendue, list(find_files(".flac", tmp + "/r1", tmp + "/r2")))
+            self.assertItemsEqual(liste_attendue, list(find_files(".*\.flac", tmp)))
+            self.assertItemsEqual(liste_attendue, list(find_files(".*\.flac", tmp + "/r1", tmp + "/r2")))
 
     def test_convert_tree(self):
         with TemporaryDirectory() as tmp:
@@ -105,7 +106,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             run(join(tmp, 'mp3'), tmp, tmp)
 
             expected = (join(tmp, mp3) for mp3 in ("mp3/r1/f11.mp3", "mp3/r1/f12.mp3", "mp3/r2/r21/f21.mp3"))
-            actual = list(find_files(".mp3", tmp))
+            actual = list(find_files(".*.mp3", tmp))
 
             self.assertItemsEqual(actual, expected)
 

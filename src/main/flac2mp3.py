@@ -11,6 +11,7 @@ import logging
 from multiprocessing import Pool
 import multiprocessing
 from posix import getcwd
+import re
 from struct import unpack
 import sys
 from tempfile import mkstemp
@@ -108,10 +109,11 @@ def transcode(flac_file, mp3_file):
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
     cover_file = join(dirname(flac_file), "cover.jpg")
+    embed_cover_file = None
     if os.path.isfile(cover_file):
         lame_tags['--ti'] = cover_file
     elif parser.image:
-        fd, embed_cover_file = mkstemp()
+        fd, embed_cover_file = mkstemp(prefix='flac2mp3', suffix='.tmp')
         with open(embed_cover_file, 'wb') as cover:
             cover.write(parser.image)
         lame_tags['--ti'] = embed_cover_file
@@ -124,12 +126,14 @@ def transcode(flac_file, mp3_file):
     flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
     lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
     lame_command.wait()
+    if embed_cover_file: os.remove(embed_cover_file)
 
-def find_files(extension, *root_dirs):
+def find_files(pattern, *root_dirs):
+    regexp = re.compile(pattern)
     for root_dir in root_dirs:
         for root, _, files in os.walk(root_dir):
             for file in files:
-                if file.endswith(extension): yield join(root, file)
+                if regexp.match(file): yield join(root, file)
 
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
@@ -161,7 +165,7 @@ def which(program):
                 return exe_file
 
 def run(mp3_target_path, flac_root_path, *flac_path_list):
-    flac_files = set(find_files('.flac', *flac_path_list))
+    flac_files = set(find_files('.*\.flac', *flac_path_list))
     cpu_count = get_cpu_count()
     LOGGER.info('found %d cpu(s)', cpu_count)
     LOGGER.info('found %d flac files', len(flac_files))
