@@ -97,14 +97,20 @@ class CoverFile(object):
     cover_file = None
     tmp_prefix = 'flac2mp3'
     tmp_suffix = '.tmp'
+    image = None
     def __init__(self, flac_file, image_data):
         cover_file = join(dirname(flac_file), "cover.jpg")
         if os.path.isfile(cover_file):
             self.cover_file = cover_file
         elif image_data:
+            self.image = image_data
             _,self.cover_file = mkstemp(prefix=self.tmp_prefix, suffix=self.tmp_suffix)
+
+    def __enter__(self):
+        if self.image:
             with open(self.cover_file, 'wb') as cover:
-                cover.write(image_data)
+                cover.write(self.image)
+        return self
 
     def exist(self):
         return self.cover_file is not None
@@ -112,7 +118,7 @@ class CoverFile(object):
     def path(self):
         return self.cover_file
 
-    def delete_if_temporary(self):
+    def __exit__(self, type, value, traceback):
         if self.cover_file and \
            os.path.basename(self.cover_file).startswith(self.tmp_prefix) and \
            self.cover_file.endswith(self.tmp_suffix) :
@@ -128,18 +134,17 @@ def transcode(flac_file, mp3_file):
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
-    cover_file = CoverFile(flac_file, parser.image)
-    if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
+    with CoverFile(flac_file, parser.image) as cover_file:
+        if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
 
-    lame_command_list = LAME_COMMAND.split(' ')
-    lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
-    lame_command_list.append('-')
-    lame_command_list.append(mp3_file)
+        lame_command_list = LAME_COMMAND.split(' ')
+        lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
+        lame_command_list.append('-')
+        lame_command_list.append(mp3_file)
 
-    flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
-    lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
-    lame_command.wait()
-    cover_file.delete_if_temporary()
+        flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
+        lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
+        lame_command.wait()
 
 def find_files(pattern, *root_dirs):
     regexp = re.compile(pattern)
