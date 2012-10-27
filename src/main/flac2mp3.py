@@ -130,7 +130,6 @@ def transcode(flac_file, mp3_file):
     LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
 
     lame_tags = {vobis_comments_lame_opts_map[k]: v for k,v in parser.flac_tags.items()}
-    if None in lame_tags: del lame_tags[None]
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
@@ -138,7 +137,7 @@ def transcode(flac_file, mp3_file):
         if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
 
         lame_command_list = LAME_COMMAND.split(' ')
-        lame_command_list.extend([arg for k,v in lame_tags.items() for arg in (k,v)])
+        lame_command_list.extend([arg for k,v in lame_tags.items() if k for arg in (k,v)])
         lame_command_list.append('-')
         lame_command_list.append(mp3_file)
 
