@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Flac2mp3 : Script that converts a directory with flac files into another with mp3 files keeping tags and images." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Flac2mp3</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/barreverte/flac2mp3">View on GitHub</a>
+
+          <h1 id="project_title">Flac2mp3</h1>
+          <h2 id="project_tagline">Script that converts a directory with flac files into another with mp3 files keeping tags and images.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/barreverte/flac2mp3/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/barreverte/flac2mp3/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Description</h1>
+
+<p>This is 1 utility scripts (in <code>src/main</code>) for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.</p>
+
+<p>The flac tags will be added to the mp3 files ut8 encoded, and if a cover.jpg file is found in the flac files directory it will be added to the mp3.</p>
+
+<p>The mp3 generated will be itunes compliant (accents, covers) and encoded with lame command : 
+<code>lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100</code></p>
+
+<h1>Why another flac2mp3 command ?</h1>
+
+<p>Because I didn't find one that included the cover and that did not break my accents on itunes. Cf <a href="http://www.barreverte.fr/ou-sont-mes-accents-dans-itunes">http://www.barreverte.fr/ou-sont-mes-accents-dans-itunes</a> (sorry, in french).
+Second because I wanted it to be robust (for example with comments on multiple lines, shell caracters in tags like <code>!*$</code>) and unit tested.</p>
+
+<h1>Compatibility and dependencies</h1>
+
+<p>It has been tested with linux (with python version &gt;= 2.6.2), MacOS (&gt;= Snow Leopard). It should work with Windows (I'll test it soon).</p>
+
+<p>Depends on <code>lame</code> and <code>flac</code> for the runtime.</p>
+
+<p>Depends on <code>eyeD3</code> for unit testing and developing.</p>
+
+<h2>Lame</h2>
+
+<p>Is a well known tool for encoding mp3 files. You can dowload and compile the code from the lame site : <a href="http://lame.sourceforge.net/">http://lame.sourceforge.net/</a></p>
+
+<p>Binaries bundles can be found for mac and windows : <a href="http://rarewares.org/mp3-lame-bundle.php">http://rarewares.org/mp3-lame-bundle.php</a></p>
+
+<h2>Flac</h2>
+
+<p>Is a free and open lossless audio codec. There are links to dowload pages in the official site : <a href="http://flac.sourceforge.net/download.html">http://flac.sourceforge.net/download.html</a></p>
+
+<h1>Usage</h1>
+
+<p><code>flac2mp3 [origin directories] mp3/repository/destination</code></p>
+
+<ul>
+<li>If one argument is given it is the destination : it will transcode flac files found under the current directory and put mp3 files in the destination directory with the same directory structure.</li>
+<li>If more than one argument is given, it will transcode flac files from the given directories to the destination.</li>
+</ul><p>for example, if you have :</p>
+
+<pre><code>/path/to/flac/artist1/album1/song1.flac
+             |              |song2.flac
+             |              |song3.flac
+             |              |cover.jpg
+             |
+             /artist2/album1/song1.flac
+                            |song2.flac
+                            |cover.jpg
+</code></pre>
+
+<p>1) if you do in flac directory :
+$ <code>flac2mp3.py ../mp3</code></p>
+
+<p>you'll have : </p>
+
+<pre><code>/path/to/flac/artist1/album1/song1.flac
+        |    |              |song2.flac
+        |    |              |song3.flac
+        |    |              |cover.jpg
+        |    |
+        |    /artist2/album1/song1.flac
+        |                   |song2.flac
+        |                   |cover.jpg
+        |
+        /mp3/artist1/album1/song1.mp3
+            |              |song2.mp3
+            |              |song3.mp3
+            |
+            /artist2/album1/song1.mp3
+                           |song2.mp3
+</code></pre>
+
+<p>2) if you do in flac directory : 
+$ <code>flac2mp3.py artist2 ../mp3</code></p>
+
+<p>you'll have :</p>
+
+<pre><code>/path/to/flac/artist1/album1/song1.flac
+        |    |              |song2.flac
+        |    |              |song3.flac
+        |    |
+        |    /artist2/album1/song1.flac
+        |                   |song2.flac
+        |
+        /mp3/artist2/album1/song1.mp3
+                           |song2.mp3
+</code></pre>
+
+<p>This is a work in progress.</p>
+
+<h1>development</h1>
+
+<p>To develop and test, use your favorite IDE (mine is pycharm).</p>
+
+<p>With bash to run the test you can do :
+<code>$ PYTHONPATH=src/main/:src/test/ python -m unittest flac2mp3_test flac2mp3_acceptance_test</code></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Flac2mp3 maintained by <a href="https://github.com/barreverte">barreverte</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
