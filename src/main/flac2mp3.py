@@ -164,15 +164,11 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
 
 def which(program):
     def is_exe(fpath): return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
+
+    for path in os.environ["PATH"].split(os.pathsep):
+        exe_file = os.path.join(path, program)
+        if is_exe(exe_file):
+            return exe_file
 
 def get_cpu_count():
     try:
