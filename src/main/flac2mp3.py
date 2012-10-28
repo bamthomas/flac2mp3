@@ -95,34 +95,29 @@ class VobisCommentParser(object):
 
 class CoverFile(object):
     cover_file = None
+    image_data = None
     tmp_prefix = 'flac2mp3'
     tmp_suffix = '.tmp'
-    image = None
+
     def __init__(self, flac_file, image_data):
         cover_file = join(dirname(flac_file), "cover.jpg")
         if os.path.isfile(cover_file):
             self.cover_file = cover_file
         elif image_data:
-            self.image = image_data
+            self.image_data = image_data
             _,self.cover_file = mkstemp(prefix=self.tmp_prefix, suffix=self.tmp_suffix)
 
     def __enter__(self):
-        if self.image:
+        if self.image_data:
             with open(self.cover_file, 'wb') as cover:
-                cover.write(self.image)
+                cover.write(self.image_data)
         return self
 
-    def exist(self):
-        return self.cover_file is not None
-
-    def path(self):
-        return self.cover_file
-
     def __exit__(self, type, value, traceback):
-        if self.cover_file and \
-           os.path.basename(self.cover_file).startswith(self.tmp_prefix) and \
-           self.cover_file.endswith(self.tmp_suffix) :
-            os.remove(self.cover_file)
+        if self.image_data: os.remove(self.cover_file)
+
+    def exist(self): return self.cover_file is not None
+    def path(self): return self.cover_file
 
 
 def transcode(flac_file, mp3_file):
