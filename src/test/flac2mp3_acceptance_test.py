@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import shutil
 import tempfile
-from flac2mp3 import find_files, run, transcode, which, VobisCommentParser
+from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile
 import os
 from os.path import join
 import subprocess
@@ -44,7 +44,9 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             tag = eyeD3.Tag()
             tag.link(mp3_file)
             self.assertEquals(1, len(tag.getImages()))
-            self.assertEquals(0, len(set(find_files('flac2mp3.*\.tmp', tempfile.gettempdir()))))
+            
+            tmp_file_pattern = '%s.*\%s' % (CoverFile.tmp_prefix, CoverFile.tmp_suffix)
+            self.assertEquals(0, len(set(find_files(tmp_file_pattern, tempfile.gettempdir()))))
 
     def test_acceptance_one_file_with_spaces(self):
         with TemporaryDirectory() as tmp:
