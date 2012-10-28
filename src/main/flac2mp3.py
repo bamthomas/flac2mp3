@@ -130,9 +130,8 @@ def transcode(flac_file, mp3_file):
         if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
 
         lame_command_list = LAME_COMMAND.split(' ')
-        lame_command_list.extend([arg for k,v in lame_tags.items() if k for arg in (k,v)])
-        lame_command_list.append('-')
-        lame_command_list.append(mp3_file)
+        lame_command_list.extend(arg for k,v in lame_tags.items() if k for arg in (k,v))
+        lame_command_list.extend(('-', mp3_file))
 
         flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
         lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
