@@ -12,7 +12,7 @@ from multiprocessing import Pool
 import multiprocessing
 from posix import getcwd
 import re
-from struct import unpack
+from struct import unpack, unpack_from
 import sys
 from tempfile import mkstemp
 from genericpath import isdir
@@ -69,15 +69,13 @@ class VobisCommentParser(object):
         return self
 
     def get_image_data(self, image_block):
-        tmp, = unpack('>i', image_block[4:8])
-        mime_type_length = int(tmp)
-        offset = 8 + mime_type_length
-        tmp, = unpack('>i', image_block[offset:offset + 4])
-        description_length = int(tmp)
-        offset = offset + 4 + description_length
-        tmp, = unpack('>i', image_block[offset + 16:offset + 20])
-        image_lenth = int(tmp)
-        offset += 20
+        offset = 4
+        mime_type_length, = unpack_from('>i', image_block, offset)
+        offset += 4 + mime_type_length
+        description_length, = unpack_from('>i', image_block, offset)
+        offset += 20 + description_length
+        image_lenth, = unpack_from('>i', image_block, offset)
+        offset += 4
         return image_block[offset:offset + image_lenth]
 
     def get_flac_tags(self, vobis_comment_block):
