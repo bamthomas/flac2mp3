@@ -15,7 +15,7 @@ import re
 from struct import unpack, unpack_from
 import sys
 from tempfile import mkstemp
-from genericpath import isdir
+from genericpath import isdir, isfile
 import os
 from os.path import dirname, join
 from subprocess import Popen, PIPE
@@ -149,6 +149,23 @@ def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     if flac_path_relative_to_root.startswith('/'): flac_path_relative_to_root = flac_path_relative_to_root[1:]
     return join(mp3_target_path, flac_path_relative_to_root)
 
+def tags_are_equals(flac_file, target_mp3_file):
+    try:
+        import eyeD3
+        mp3_tags = eyeD3.Tag()
+        mp3_tags.link(target_mp3_file)
+        parser = VobisCommentParser().parse(flac_file)
+
+        return unicode(parser.flac_tags['ARTIST']) == mp3_tags.getArtist() and \
+            unicode(parser.flac_tags['ALBUM']) == mp3_tags.getAlbum() and \
+            unicode(parser.flac_tags['TITLE']) == mp3_tags.getTitle() and\
+            parser.flac_tags['GENRE'] == mp3_tags.getGenre().name and \
+            parser.flac_tags['DATE'] == mp3_tags.getYear() and \
+            int(parser.flac_tags['TRACKNUMBER']) == mp3_tags.getTrackNum()[0] and \
+            (not parser.flac_tags['TRACKTOTAL'] or int(parser.flac_tags['TRACKTOTAL']) == mp3_tags.getTrackNum()[1])
+    except ImportError:
+        return False
+
 def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
     try:
         target_mp3_file = get_mp3_filename(mp3_target_path, flac_root_path, flac_file)
@@ -157,12 +174,15 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
                 os.makedirs(dirname(target_mp3_file))
             except OSError:
                 pass # other thread might have been faster
-        transcode(flac_file, target_mp3_file)
+        if isfile(target_mp3_file) and tags_are_equals(flac_file, target_mp3_file):
+            LOGGER.info('skipping %r as target mp3 file exists and seems to have the same tags', flac_file)
+        else:
+            transcode(flac_file, target_mp3_file)
     except Exception as e:
-        LOGGER.error('error during the transcoding of %r : %s' % (flac_file, e))
+        LOGGER.exception('error during the transcoding of %r : %s' % (flac_file, e))
 
 def which(program):
-    def is_exe(fpath): return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    def is_exe(fpath): return isfile(fpath) and os.access(fpath, os.X_OK)
 
     for path in os.environ["PATH"].split(os.pathsep):
         exe_file = os.path.join(path, program)

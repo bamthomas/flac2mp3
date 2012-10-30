@@ -2,6 +2,7 @@
 import shutil
 import tempfile
 from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile
+import flac2mp3
 import os
 from os.path import join
 import subprocess
@@ -32,6 +33,45 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertEquals('Electronic', tag.getGenre().getName())
             self.assertEquals('2008', (tag.getDate()[0]).getYear())
             self.assertEquals(1, len(tag.getImages()))
+
+    def test_target_mp3_exists_flac_is_not_transcoded_again(self):
+        with TemporaryDirectory() as tmp:
+            flac_file = join(tmp, 'tmp.flac')
+            mp3_file = join(tmp, 'tmp.mp3')
+            self.create_flac_file(flac_file)
+            nb_transcode = [0]
+
+            transcode_func = flac2mp3.transcode
+            def transcode_and_count(flac_file, mp3_file):
+                transcode_func(flac_file, mp3_file)
+                nb_transcode[0] += 1
+            flac2mp3.transcode = transcode_and_count
+
+            flac2mp3.process_transcoding((flac_file, tmp, tmp))
+            flac2mp3.process_transcoding((flac_file, tmp, tmp))
+
+            self.assertEquals(1, nb_transcode[0])
+            flac2mp3.transcode = transcode_func
+
+    def test_target_mp3_exists_with_differents_tags_flac_is_transcoded_again(self):
+        with TemporaryDirectory() as tmp:
+            flac_file = join(tmp, 'tmp.flac')
+            mp3_file = join(tmp, 'tmp.mp3')
+            self.create_flac_file(flac_file)
+            nb_transcode = [0]
+
+            transcode_func = flac2mp3.transcode
+            def transcode_and_count(flac_file, mp3_file):
+                transcode_func(flac_file, mp3_file)
+                nb_transcode[0] += 1
+            flac2mp3.transcode = transcode_and_count
+
+            flac2mp3.process_transcoding((flac_file, tmp, tmp))
+            self.create_flac_file(flac_file, tags={'ARTIST': 'artist'})
+            flac2mp3.process_transcoding((flac_file, tmp, tmp))
+
+            self.assertEquals(2, nb_transcode[0])
+            flac2mp3.transcode = transcode_func
 
     def test_acceptance_one_file_with_embedded_cover(self):
         with TemporaryDirectory() as tmp:
