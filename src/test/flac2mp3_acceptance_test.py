@@ -51,7 +51,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             flac_file, mp3_file = self.init_files(tmp)
 
             flac2mp3.process_transcoding((flac_file, tmp, tmp))
-            self.create_flac_file(flac_file, tags={'ARTIST': 'artist'})
+
+            self.create_flac_file(flac_file, tags={'ARTIST': u'artist'})
             flac2mp3.process_transcoding((flac_file, tmp, tmp))
 
             self.assertEquals(2, transcode.count())

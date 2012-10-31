@@ -11,15 +11,15 @@ class TestFlac2Mp3(unittest.TestCase):
 
     def test_get_flac_tags_one_comment(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(1) + encode(b'TITRE=titre'))
-        self.assertEquals({"TITRE" : "titre"}, tags)
+        self.assertEquals({"TITRE" : u"titre"}, tags)
 
     def test_get_flac_tags_two_comments_with_upper_and_lower_case(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode('TiTrE=titre') + encode('album=album'))
-        self.assertEquals({"TITRE" : "titre", "ALBUM" : "album"}, tags)
+        self.assertEquals({"TITRE" : u"titre", "ALBUM" : u"album"}, tags)
 
     def test_get_flac_tags_two_comments_with_equal_sign_in_value(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode('TiTrE=e=mc2') + encode('album=album'))
-        self.assertEquals({"TITRE" : "e=mc2", "ALBUM" : "album"}, tags)
+        self.assertEquals({"TITRE" : u"e=mc2", "ALBUM" : u"album"}, tags)
 
     def test_get_flac_tags_two_comments_with_carriage_return(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode(
