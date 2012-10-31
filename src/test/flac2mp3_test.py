@@ -21,6 +21,10 @@ class TestFlac2Mp3(unittest.TestCase):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode('TiTrE=e=mc2') + encode('album=album'))
         self.assertEquals({"TITRE" : u"e=mc2", "ALBUM" : u"album"}, tags)
 
+    def test_get_flac_tags_unicode_strings_for_artist_album_title(self):
+            tags = VobisCommentParser().get_flac_tags(vobis_block_header(3) + encode('title=à') + encode('album=bé') + encode('artist=cè'))
+            self.assertEquals({"TITLE" : u"à", "ALBUM" : u"bé", 'ARTIST': u'cè'}, tags)
+
     def test_get_flac_tags_two_comments_with_carriage_return(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode(
             u"DESCRIPTION=Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino") + encode(

@@ -156,9 +156,10 @@ def tags_are_equals(flac_file, target_mp3_file):
         mp3_tags.link(target_mp3_file)
         parser = VobisCommentParser().parse(flac_file)
 
-        return unicode(parser.flac_tags['ARTIST']) == mp3_tags.getArtist() and \
-            unicode(parser.flac_tags['ALBUM']) == mp3_tags.getAlbum() and \
-            unicode(parser.flac_tags['TITLE']) == mp3_tags.getTitle() and\
+        return \
+            parser.flac_tags['ARTIST'] == mp3_tags.getArtist() and \
+            parser.flac_tags['ALBUM'] == mp3_tags.getAlbum() and \
+            parser.flac_tags['TITLE'] == mp3_tags.getTitle() and\
             parser.flac_tags['GENRE'] == mp3_tags.getGenre().name and \
             parser.flac_tags['DATE'] == mp3_tags.getYear() and \
             int(parser.flac_tags['TRACKNUMBER']) == mp3_tags.getTrackNum()[0] and \
@@ -208,6 +209,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k,v = string_with_equal.split('=', 1)
+    if k.upper() in ('ARTIST', 'ALBUM', 'TITLE'): v = unicode(v, 'utf-8')
     return k.upper(), v
 
 class Usage(Exception):
