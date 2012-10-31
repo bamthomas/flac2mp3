@@ -15,11 +15,14 @@ import eyeD3
 __author__ = 'bruno thomas'
 
 class TestFlac2Mp3Acceptance(unittest.TestCase):
+    def init_files(self, tmp, embbed=False):
+        flac_file = join(tmp, 'tmp.flac')
+        self.create_flac_file(flac_file, embbed=embbed)
+        return flac_file, join(tmp, 'tmp.mp3')
+
     def test_acceptance_one_file(self):
         with TemporaryDirectory() as tmp:
-            flac_file = join(tmp, 'tmp.flac')
-            mp3_file = join(tmp, 'tmp.mp3')
-            self.create_flac_file(flac_file)
+            flac_file, mp3_file = self.init_files(tmp)
 
             transcode(flac_file, mp3_file)
 
@@ -35,49 +38,27 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertEquals(1, len(tag.getImages()))
 
     def test_target_mp3_exists_flac_is_not_transcoded_again(self):
-        with TemporaryDirectory() as tmp:
-            flac_file = join(tmp, 'tmp.flac')
-            mp3_file = join(tmp, 'tmp.mp3')
-            self.create_flac_file(flac_file)
-            nb_transcode = [0]
-
-            transcode_func = flac2mp3.transcode
-            def transcode_and_count(flac_file, mp3_file):
-                transcode_func(flac_file, mp3_file)
-                nb_transcode[0] += 1
-            flac2mp3.transcode = transcode_and_count
+        with TemporaryDirectory() as tmp, CountingTranscodeCalls() as transcode:
+            flac_file, mp3_file = self.init_files(tmp)
 
             flac2mp3.process_transcoding((flac_file, tmp, tmp))
             flac2mp3.process_transcoding((flac_file, tmp, tmp))
 
-            self.assertEquals(1, nb_transcode[0])
-            flac2mp3.transcode = transcode_func
+            self.assertEquals(1, transcode.count())
 
     def test_target_mp3_exists_with_differents_tags_flac_is_transcoded_again(self):
-        with TemporaryDirectory() as tmp:
-            flac_file = join(tmp, 'tmp.flac')
-            mp3_file = join(tmp, 'tmp.mp3')
-            self.create_flac_file(flac_file)
-            nb_transcode = [0]
-
-            transcode_func = flac2mp3.transcode
-            def transcode_and_count(flac_file, mp3_file):
-                transcode_func(flac_file, mp3_file)
-                nb_transcode[0] += 1
-            flac2mp3.transcode = transcode_and_count
+        with TemporaryDirectory() as tmp, CountingTranscodeCalls() as transcode:
+            flac_file, mp3_file = self.init_files(tmp)
 
             flac2mp3.process_transcoding((flac_file, tmp, tmp))
             self.create_flac_file(flac_file, tags={'ARTIST': 'artist'})
             flac2mp3.process_transcoding((flac_file, tmp, tmp))
 
-            self.assertEquals(2, nb_transcode[0])
-            flac2mp3.transcode = transcode_func
+            self.assertEquals(2, transcode.count())
 
     def test_acceptance_one_file_with_embedded_cover(self):
         with TemporaryDirectory() as tmp:
-            flac_file = join(tmp, 'tmp.flac')
-            mp3_file = join(tmp, 'tmp.mp3')
-            self.create_flac_file(flac_file, embbed=True)
+            flac_file, mp3_file = self.init_files(tmp, embbed=True)
 
             transcode(flac_file, mp3_file)
 
@@ -161,7 +142,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             flac_file = join(tmp, 'tmp.flac')
             mp3_file = join(tmp, 'tmp.mp3')
-            self.create_flac_file(flac_file, {flac_key: flac_value})
+            self.create_flac_file(flac_file, tags={flac_key: flac_value})
             transcode(flac_file, mp3_file)
             tag = eyeD3.Tag()
             tag.link(mp3_file)
@@ -196,3 +177,21 @@ class TemporaryDirectory(object):
         return self.tempdir
     def __exit__(self, type, value, traceback):
         shutil.rmtree(self.tempdir, ignore_errors = True)
+
+class CountingTranscodeCalls(object):
+    def __init__(self):
+        self.nb_transcode = [0]
+    def __enter__(self):
+        self.transcode_func = flac2mp3.transcode
+        flac2mp3.transcode = self.transcode_and_count
+        return self
+
+    def __exit__(self, type, value, traceback):
+        flac2mp3.transcode = self.transcode_func
+
+    def transcode_and_count(self, flac_file, mp3_file):
+        self.transcode_func(flac_file, mp3_file)
+        self.nb_transcode[0] += 1
+
+    def count(self):
+        return self.nb_transcode[0]
