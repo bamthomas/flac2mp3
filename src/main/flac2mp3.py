@@ -10,7 +10,6 @@ from logging import INFO
 import logging
 from multiprocessing import Pool
 import multiprocessing
-from posix import getcwd
 import re
 from struct import unpack, unpack_from
 import sys
@@ -241,7 +240,7 @@ def main(argv):
             LOGGER.fatal("Cannot find flac. Please install flac: http://flac.sourceforge.net/")
             return 3
 
-        run(mp3_target_path, getcwd(), *args)
+        run(mp3_target_path, os.getcwd(), *args)
         return 0
     except Usage, err:
         print >> sys.stderr, err.msg
