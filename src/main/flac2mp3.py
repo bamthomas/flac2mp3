@@ -42,6 +42,9 @@ vobis_comments_lame_opts_map = none_if_missing({
    'TRACKTOTAL' : 'total'
 })
 
+def utf8_encode(string):
+    return unicode(string, 'utf-8')
+
 class VobisCommentParser(object):
     image = None
     flac_tags = {}
@@ -141,7 +144,7 @@ def find_files(pattern, *root_dirs):
     for root_dir in root_dirs:
         for root, _, files in os.walk(root_dir):
             for file in files:
-                if regexp.match(file): yield join(unicode(root,'utf-8'), unicode(file,'utf-8'))
+                if regexp.match(file): yield join(utf8_encode(root), utf8_encode(file))
 
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
@@ -209,7 +212,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k,v = string_with_equal.split('=', 1)
-    if k.upper() in ('ARTIST', 'ALBUM', 'TITLE'): v = unicode(v, 'utf-8')
+    if k.upper() in ('ARTIST', 'ALBUM', 'TITLE'): v = utf8_encode(v)
     return k.upper(), v
 
 class Usage(Exception):
