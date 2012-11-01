@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import shutil
+import stat
 import tempfile
 from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile
 import flac2mp3
@@ -138,6 +139,14 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assertEquals('/bin/ls', which('ls'))
         self.assertEquals('/bin/ls', which('/bin/ls'))
         self.assertIsNone(which('blahblah'))
+
+    def test_which_for_windows(self):
+        with TemporaryDirectory() as tmp:
+            os.environ["PATH"] = '%s:%s' % (os.environ["PATH"], tmp)
+            exe_file = join(tmp,'mywin.exe')
+            with open(exe_file,'w'):
+                os.chmod(exe_file, stat.S_IXUSR)
+                self.assertEquals(exe_file, which('mywin'))
 
     def assert_tag_present_in_mp3(self, eyed3_method_name, flac_key, flac_value):
         with TemporaryDirectory() as tmp:

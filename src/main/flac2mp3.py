@@ -185,9 +185,10 @@ def which(program):
     def is_exe(fpath): return isfile(fpath) and os.access(fpath, os.X_OK)
 
     for path in os.environ["PATH"].split(os.pathsep):
-        exe_file = os.path.join(path, program)
-        if is_exe(exe_file):
-            return exe_file
+        exe_files = os.path.join(path, program), os.path.join(path, program + '.exe')
+        for exe_file in exe_files:
+            if is_exe(exe_file):
+                return exe_file
 
 def get_cpu_count():
     try:
