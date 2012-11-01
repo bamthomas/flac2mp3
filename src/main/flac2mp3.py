@@ -132,7 +132,7 @@ def transcode(flac_file, mp3_file):
         lame_command_list.extend(arg for k,v in lame_tags.items() if k for arg in (k,v))
         lame_command_list.extend(('-', mp3_file))
 
-        flac_command = Popen(('flac', '-dcs', flac_file), stdout=PIPE)
+        flac_command = Popen(('flac', '--totally-silent', '-dc', flac_file), stdout=PIPE)
         lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
         lame_command.wait()
 
@@ -141,7 +141,7 @@ def find_files(pattern, *root_dirs):
     for root_dir in root_dirs:
         for root, _, files in os.walk(root_dir):
             for file in files:
-                if regexp.match(file): yield join(root, file)
+                if regexp.match(file): yield join(unicode(root,'utf-8'), unicode(file,'utf-8'))
 
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')

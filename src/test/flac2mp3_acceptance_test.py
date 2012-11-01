@@ -135,6 +135,14 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
             self.assertItemsEqual(actual, expected)
 
+    def test_convert_tree_with_accents(self):
+        with TemporaryDirectory() as tmp:
+            self.create_flac_file(join(tmp, 'éèà.flac'))
+
+            run(tmp, tmp, tmp)
+
+            self.assertTrue(os.path.isfile(join(tmp, 'éèà.mp3')))
+
     def test_which(self):
         self.assertEquals('/bin/ls', which('ls'))
         self.assertEquals('/bin/ls', which('/bin/ls'))
