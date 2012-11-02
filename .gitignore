@@ -3,3 +3,5 @@ Flac2mp3.iml
 .idea
 virt_env
 *.pyc
+*.iml
+
