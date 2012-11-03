@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 import shutil
 import stat
 import tempfile
@@ -90,7 +89,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         self.assert_tag_present_in_mp3('getArtist', 'ARTIST', '!!! money $ stars * and percentages %')
 
     def test_one_file_one_tag_with_accent(self):
-        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', u'titre à accent')
+        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'titre \xc3\xa0 accent'.decode('utf-8'))
 
     def test_transcode_without_cover(self):
         with TemporaryDirectory() as tmp:
@@ -137,11 +136,11 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
     def test_convert_tree_with_accents(self):
         with TemporaryDirectory() as tmp:
-            self.create_flac_file(join(tmp, 'éèà.flac'))
+            self.create_flac_file(join(tmp, '\xc3\xa9\xc3\xa8\xc3\xa0.flac'.decode('utf-8')))
 
             run(tmp, tmp, tmp)
 
-            self.assertTrue(os.path.isfile(join(tmp, 'éèà.mp3')))
+            self.assertTrue(os.path.isfile(join(tmp, '\xc3\xa9\xc3\xa8\xc3\xa0.mp3'.decode('utf-8'))))
 
     def test_which(self):
         self.assertEquals('/bin/ls', which('ls'))
