@@ -120,8 +120,7 @@ class CoverFile(object):
 
 def transcode(flac_file, mp3_file):
     parser = VobisCommentParser().parse(flac_file)
-    fs_encoding = sys.getfilesystemencoding()
-    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file.decode(fs_encoding), parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
+    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file, parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
 
     lame_tags = {vobis_comments_lame_opts_map[k]: v for k,v in parser.flac_tags.items()}
     if 'total' in lame_tags:
@@ -139,11 +138,12 @@ def transcode(flac_file, mp3_file):
         lame_command.wait()
 
 def find_files(pattern, *root_dirs):
+    fs_encoding = sys.getfilesystemencoding()
     regexp = re.compile(pattern)
     for root_dir in root_dirs:
         for root, _, files in os.walk(root_dir):
             for file in files:
-                if regexp.match(file): yield join(root, file)
+                if regexp.match(file): yield join(root.decode(fs_encoding), file.decode(fs_encoding))
 
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
@@ -212,8 +212,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k,v = string_with_equal.split('=', 1)
     # vobis comments are utf-8 http://www.xiph.org/vorbis/doc/v-comment.html
-    if k.upper() in ('ARTIST', 'ALBUM', 'TITLE'): v = v.decode('utf-8')
-    return k.upper(), v
+    return k.upper(), v.decode('utf-8')
 
 class Usage(Exception):
     def __init__(self, msg, *args, **kwargs):
