@@ -10,6 +10,7 @@ from logging import INFO
 import logging
 from multiprocessing import Pool
 import multiprocessing
+import locale
 import re
 from struct import unpack, unpack_from
 import sys
@@ -119,7 +120,8 @@ class CoverFile(object):
 
 def transcode(flac_file, mp3_file):
     parser = VobisCommentParser().parse(flac_file)
-    LOGGER.info('transcoding %s with tags (title=%s artist=%s track=%s/%s)', flac_file, parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
+    fs_encoding = sys.getfilesystemencoding()
+    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file.decode(fs_encoding), parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
 
     lame_tags = {vobis_comments_lame_opts_map[k]: v for k,v in parser.flac_tags.items()}
     if 'total' in lame_tags:
