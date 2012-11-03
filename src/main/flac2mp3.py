@@ -26,6 +26,7 @@ logging.basicConfig(format='%(asctime)s [%(name)s] %(levelname)s: %(message)s')
 LOGGER = logging.getLogger('flac2mp3')
 
 LAME_COMMAND = 'lame --silent -V2 --vbr-new -q0 --lowpass 19.7 --resample 44100 --add-id3v2'
+FILE_SYSTEM_ENCODING = sys.getfilesystemencoding()
 VOBIS_COMMENT = 4
 PICTURE = 6
 
@@ -132,19 +133,18 @@ def transcode(flac_file, mp3_file):
 
         lame_command_list = LAME_COMMAND.split(' ')
         lame_command_list.extend(arg for k,v in lame_tags.items() if k for arg in (k,v.encode(encoding)))
-        lame_command_list.extend(('-', mp3_file))
+        lame_command_list.extend(('-', mp3_file.encode(FILE_SYSTEM_ENCODING)))
 
-        flac_command = Popen(('flac', '--totally-silent', '-dc', flac_file), stdout=PIPE)
+        flac_command = Popen(('flac', '--totally-silent', '-dc', flac_file.encode(FILE_SYSTEM_ENCODING)), stdout=PIPE)
         lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
         lame_command.wait()
 
 def find_files(pattern, *root_dirs):
-    fs_encoding = sys.getfilesystemencoding()
     regexp = re.compile(pattern)
     for root_dir in root_dirs:
         for root, _, files in os.walk(root_dir):
             for file in files:
-                if regexp.match(file): yield join(root.decode(fs_encoding), file.decode(fs_encoding))
+                if regexp.match(file): yield join(root.decode(FILE_SYSTEM_ENCODING), file.decode(FILE_SYSTEM_ENCODING))
 
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
