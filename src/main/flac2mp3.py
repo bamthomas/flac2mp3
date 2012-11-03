@@ -126,11 +126,12 @@ def transcode(flac_file, mp3_file):
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
+    encoding = locale.getpreferredencoding()
     with CoverFile(flac_file, parser.image) as cover_file:
         if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
 
         lame_command_list = LAME_COMMAND.split(' ')
-        lame_command_list.extend(arg for k,v in lame_tags.items() if k for arg in (k,v))
+        lame_command_list.extend(arg for k,v in lame_tags.items() if k for arg in (k,v.encode(encoding)))
         lame_command_list.extend(('-', mp3_file))
 
         flac_command = Popen(('flac', '--totally-silent', '-dc', flac_file), stdout=PIPE)
