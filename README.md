@@ -92,5 +92,6 @@ With bash to run the test you can do :
 
 # Known issues
 
-* weird errors when deleting temp cover images embedded in flac files on windows : "WindowsError: [Error 32] The process cannot access the file because it is being used by another process". But the transcoding is ok anyway.
-* the skip file function is not working after windows encoding stuffs
+* [windows] weird errors when deleting temp cover images embedded in flac files on windows : "WindowsError: [Error 32] The process cannot access the file because it is being used by another process". But the transcoding is ok anyway.
+* [all] the skip file function is not working after windows encoding stuffs
+* [windows] the log for each track start encoding is not displayed
