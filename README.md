@@ -13,7 +13,7 @@ Second because I wanted it to be robust (for example with comments on multiple l
 # Compatibility and dependencies
 It has been tested with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard), Windows Vista (with python version >= 2.6.2).
 
-Depends on `lame` and `flac` for the runtime.
+Depends on `lame` (>=3.99 if you want your accents) and `flac` for the runtime.
 
 Depends on `eyeD3` for unit testing and developing.
 
