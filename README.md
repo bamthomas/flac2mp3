@@ -11,7 +11,7 @@ Because I didn't find one that included the cover and that did not break my acce
 Second because I wanted it to be robust (for example with comments on multiple lines, shell caracters in tags like `!*$`) and unit tested.
 
 # Compatibility and dependencies
-It has been tested with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard). It should work with Windows (I'll test it soon).
+It has been tested with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard), Windows Vista (with python version >= 2.6.2).
 
 Depends on `lame` and `flac` for the runtime.
 
@@ -84,9 +84,12 @@ you'll have :
 
 This is a work in progress.
 
-# development
+# Development
 To develop and test, use your favorite IDE (mine is pycharm).
 
 With bash to run the test you can do :
 `$ PYTHONPATH=src/main/:src/test/ python -m unittest flac2mp3_test flac2mp3_acceptance_test`
 
+# Known issues
+
+* weird errors when deleting temp cover images embedded in flac files on windows : "WindowsError: [Error 32] The process cannot access the file because it is being used by another process". But the transcoding is ok anyway.
