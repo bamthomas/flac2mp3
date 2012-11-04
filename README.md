@@ -13,7 +13,7 @@ Second because I wanted it to be robust (for example with comments on multiple l
 # Compatibility and dependencies
 It has been tested with linux (with python version >= 2.6.2), MacOS (>= Snow Leopard), Windows Vista (with python version >= 2.6.2).
 
-Depends on `lame` and `flac` for the runtime.
+Depends on `lame` (>=3.99 if you want your accents) and `flac` for the runtime.
 
 Depends on `eyeD3` for unit testing and developing.
 
@@ -92,4 +92,6 @@ With bash to run the test you can do :
 
 # Known issues
 
-* weird errors when deleting temp cover images embedded in flac files on windows : "WindowsError: [Error 32] The process cannot access the file because it is being used by another process". But the transcoding is ok anyway.
+* [windows] weird errors when deleting temp cover images embedded in flac files on windows : "WindowsError: [Error 32] The process cannot access the file because it is being used by another process". But the transcoding is ok anyway.
+* [all] the skip file function is not working after windows encoding stuffs
+* [windows] the log for each track start encoding is not displayed
