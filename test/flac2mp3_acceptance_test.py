@@ -144,7 +144,7 @@ class TestFlac2Mp3Acceptance(object):
     def test_which(self):
         assert_equals('/bin/ls', which('ls'))
         assert_equals('/bin/ls', which('/bin/ls'))
-        assert_is_none(which('blahblah'))
+        assert_equals(None, which('blahblah'))
 
     def test_which_for_windows(self):
         with TemporaryDirectory() as tmp:
