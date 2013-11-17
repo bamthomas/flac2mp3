@@ -1,4 +1,3 @@
-import shutil
 import stat
 import tempfile
 from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile
@@ -8,13 +7,13 @@ from os.path import join
 import subprocess
 from os.path import dirname, isdir
 from os import makedirs
-import unittest
 import binascii
 import eyed3
+from nose.tools import assert_equals, ok_ , assert_items_equal, assert_is_none
 
 __author__ = 'bruno thomas'
 
-class TestFlac2Mp3Acceptance(unittest.TestCase):
+class TestFlac2Mp3Acceptance(object):
     def init_files(self, tmp, embbed=False):
         flac_file = join(tmp, 'tmp.flac')
         self.create_flac_file(flac_file, embbed=embbed)
@@ -27,14 +26,14 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             transcode(flac_file, mp3_file)
 
             tag = eyed3.load(mp3_file).tag
-            self.assertEquals('artist', tag.artist)
-            self.assertEquals((1,15), tag.track_num)
-            self.assertEquals('album', tag.album)
-            self.assertEquals('title', tag.title)
-            self.assertEquals('description', tag.comments[0].text)
-            self.assertEquals('Electronic', tag.genre.name)
-            self.assertEquals('2008', str(tag.getBestDate()))
-            self.assertEquals(1, len(tag.images))
+            assert_equals('artist', tag.artist)
+            assert_equals((1,15), tag.track_num)
+            assert_equals('album', tag.album)
+            assert_equals('title', tag.title)
+            assert_equals('description', tag.comments[0].text)
+            assert_equals('Electronic', tag.genre.name)
+            assert_equals('2008', str(tag.getBestDate()))
+            assert_equals(1, len(tag.images))
 
     def test_target_mp3_exists_flac_is_not_transcoded_again(self):
         with TemporaryDirectory() as tmp:
@@ -43,8 +42,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
                 flac2mp3.process_transcoding((flac_file, tmp, tmp))
                 flac2mp3.process_transcoding((flac_file, tmp, tmp))
-    
-                self.assertEquals(1, transcode.count())
+
+                assert_equals(1, transcode.count())
 
     def test_target_mp3_exists_with_differents_tags_flac_is_transcoded_again(self):
         with TemporaryDirectory() as tmp:
@@ -56,7 +55,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
                 self.create_flac_file(flac_file, tags={'ARTIST': u'artist'})
                 flac2mp3.process_transcoding((flac_file, tmp, tmp))
 
-                self.assertEquals(2, transcode.count())
+                assert_equals(2, transcode.count())
 
     def test_acceptance_one_file_with_embedded_cover(self):
         with TemporaryDirectory() as tmp:
@@ -65,10 +64,10 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             transcode(flac_file, mp3_file)
 
             tag = eyed3.load(mp3_file).tag
-            self.assertEquals(1, len(tag.images))
+            assert_equals(1, len(tag.images))
             
             tmp_file_pattern = '%s.*\%s' % (CoverFile.tmp_prefix, CoverFile.tmp_suffix)
-            self.assertEquals(0, len(set(find_files(tmp_file_pattern, tempfile.gettempdir()))))
+            assert_equals(0, len(set(find_files(tmp_file_pattern, tempfile.gettempdir()))))
 
     def test_acceptance_one_file_with_spaces(self):
         with TemporaryDirectory() as tmp:
@@ -78,7 +77,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
             transcode(flac_file, mp3_file)
 
-            self.assertTrue(os.path.isfile(mp3_file))
+            ok_(os.path.isfile(mp3_file))
 
     def test_one_file_one_tag(self):
         self.assert_tag_present_in_mp3('artist', 'ARTIST', 'artist')
@@ -95,7 +94,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             self.create_flac_file(join(tmp, 'tmp.flac'), cover=None)
             transcode(join(tmp, 'tmp.flac'),join(tmp, 'tmp.mp3'))
-            self.assertTrue(os.path.isfile(join(tmp, 'tmp.mp3')))
+            ok_(os.path.isfile(join(tmp, 'tmp.mp3')))
 
     def test_get_flac_tags(self):
         with TemporaryDirectory() as tmp:
@@ -103,7 +102,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
             parser = VobisCommentParser().parse(join(tmp, 'tmp.flac'))
 
-            self.assertEquals({'ALBUM': 'album', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
+            assert_equals({'ALBUM': 'album', 'TITLE': 'title', 'ARTIST': 'artist', 'TRACKTOTAL': '15', 'DATE': '2008',
                                'DESCRIPTION': 'description', 'GENRE': 'Electronic', 'TRACKNUMBER': '1', 'COPYRIGHT': 'copyright'},
                 parser.flac_tags)
 
@@ -115,8 +114,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             for file in ('/r1/f11.flac', '/r1/f12.flac', '/r2/r21/f21.flac'): open(tmp + file, 'w').close()
             liste_attendue = [tmp + '/r1/f11.flac', tmp + '/r1/f12.flac', tmp + '/r2/r21/f21.flac']
 
-            self.assertItemsEqual(liste_attendue, list(find_files(".*\.flac", tmp)))
-            self.assertItemsEqual(liste_attendue, list(find_files(".*\.flac", tmp + "/r1", tmp + "/r2")))
+            assert_items_equal(liste_attendue, list(find_files(".*\.flac", tmp)))
+            assert_items_equal(liste_attendue, list(find_files(".*\.flac", tmp + "/r1", tmp + "/r2")))
 
     def test_convert_tree(self):
         with TemporaryDirectory() as tmp:
@@ -132,7 +131,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             expected = (join(tmp, mp3) for mp3 in ("mp3/r1/f11.mp3", "mp3/r1/f12.mp3", "mp3/r2/r21/f21.mp3"))
             actual = list(find_files(".*.mp3", tmp))
 
-            self.assertItemsEqual(actual, expected)
+            assert_items_equal(actual, expected)
 
     def test_convert_tree_with_accents(self):
         with TemporaryDirectory() as tmp:
@@ -140,12 +139,12 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
             run(tmp, tmp, tmp)
 
-            self.assertTrue(os.path.isfile(join(tmp, '\xc3\xa9\xc3\xa8\xc3\xa0.mp3'.decode('utf-8'))))
+            ok_(os.path.isfile(join(tmp, '\xc3\xa9\xc3\xa8\xc3\xa0.mp3'.decode('utf-8'))))
 
     def test_which(self):
-        self.assertEquals('/bin/ls', which('ls'))
-        self.assertEquals('/bin/ls', which('/bin/ls'))
-        self.assertIsNone(which('blahblah'))
+        assert_equals('/bin/ls', which('ls'))
+        assert_equals('/bin/ls', which('/bin/ls'))
+        assert_is_none(which('blahblah'))
 
     def test_which_for_windows(self):
         with TemporaryDirectory() as tmp:
@@ -153,7 +152,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             exe_file = join(tmp,'mywin.exe')
             with open(exe_file,'w'):
                 os.chmod(exe_file, stat.S_IXUSR)
-                self.assertEquals(exe_file, which('mywin'))
+                assert_equals(exe_file, which('mywin'))
 
     def assert_tag_present_in_mp3(self, eyed3_attribute, flac_key, flac_value):
         with TemporaryDirectory() as tmp:
@@ -162,7 +161,7 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.create_flac_file(flac_file, tags={flac_key: flac_value})
             transcode(flac_file, mp3_file)
             tag = eyed3.load(mp3_file).tag
-            self.assertEquals(flac_value, getattr(tag, eyed3_attribute))
+            assert_equals(flac_value, getattr(tag, eyed3_attribute))
 
     def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description','COPYRIGHT': 'copyright'}, cover='cover.jpg', embbed=False):
         with open('/tmp/tmp.wav', 'wb') as mp3:
