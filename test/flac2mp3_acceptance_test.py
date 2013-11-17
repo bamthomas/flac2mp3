@@ -114,8 +114,8 @@ class TestFlac2Mp3Acceptance(object):
             for file in ('/r1/f11.flac', '/r1/f12.flac', '/r2/r21/f21.flac'): open(tmp + file, 'w').close()
             liste_attendue = [tmp + '/r1/f11.flac', tmp + '/r1/f12.flac', tmp + '/r2/r21/f21.flac']
 
-            assert_equals(liste_attendue, list(find_files(".*\.flac", tmp)))
-            assert_equals(liste_attendue, list(find_files(".*\.flac", tmp + "/r1", tmp + "/r2")))
+            assert_equals(sorted(liste_attendue), sorted(list(find_files(".*\.flac", tmp))))
+            assert_equals(sorted(liste_attendue), sorted(list(find_files(".*\.flac", tmp + "/r1", tmp + "/r2"))))
 
     def test_convert_tree(self):
         with TemporaryDirectory() as tmp:
@@ -131,7 +131,7 @@ class TestFlac2Mp3Acceptance(object):
             expected = list(join(tmp, mp3) for mp3 in ("mp3/r1/f11.mp3", "mp3/r1/f12.mp3", "mp3/r2/r21/f21.mp3"))
             actual = list(find_files(".*.mp3", tmp))
 
-            assert_equals(actual, expected)
+            assert_equals(sorted(actual), sorted(expected))
 
     def test_convert_tree_with_accents(self):
         with TemporaryDirectory() as tmp:
