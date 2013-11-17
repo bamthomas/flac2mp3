@@ -188,7 +188,10 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
 class TemporaryDirectory(object):
     def __enter__(self):
-        self.tempdir = tempfile.mkdtemp()
+        directory = 'tmp'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        self.tempdir = tempfile.mkdtemp(dir=directory)
         return self.tempdir
     def __exit__(self, type, value, traceback):
         #shutil.rmtree(self.tempdir, ignore_errors = True)
