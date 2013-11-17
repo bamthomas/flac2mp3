@@ -9,7 +9,7 @@ from os.path import dirname, isdir
 from os import makedirs
 import binascii
 import eyed3
-from nose.tools import assert_equals, ok_, assert_is_none
+from nose.tools import assert_equals, ok_
 
 __author__ = 'bruno thomas'
 
