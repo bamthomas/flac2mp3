@@ -153,19 +153,18 @@ def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
 
 def tags_are_equals(flac_file, target_mp3_file):
     try:
-        import eyeD3
-        mp3_tags = eyeD3.Tag()
-        mp3_tags.link(target_mp3_file)
+        import eyed3
+        mp3_tags = eyed3.load(target_mp3_file).tag
         parser = VobisCommentParser().parse(flac_file)
 
         return \
-            parser.flac_tags['ARTIST'] == mp3_tags.getArtist() and \
-            parser.flac_tags['ALBUM'] == mp3_tags.getAlbum() and \
-            parser.flac_tags['TITLE'] == mp3_tags.getTitle() and\
-            parser.flac_tags['GENRE'] == mp3_tags.getGenre().name and \
-            parser.flac_tags['DATE'] == mp3_tags.getYear() and \
-            int(parser.flac_tags['TRACKNUMBER']) == mp3_tags.getTrackNum()[0] and \
-            (not parser.flac_tags['TRACKTOTAL'] or int(parser.flac_tags['TRACKTOTAL']) == mp3_tags.getTrackNum()[1])
+            parser.flac_tags['ARTIST'] == mp3_tags.artist and \
+            parser.flac_tags['ALBUM'] == mp3_tags.album and \
+            parser.flac_tags['TITLE'] == mp3_tags.title and\
+            parser.flac_tags['GENRE'] == mp3_tags.genre.name and \
+            parser.flac_tags['DATE'] == mp3_tags.year and \
+            int(parser.flac_tags['TRACKNUMBER']) == mp3_tags.track_num[0] and \
+            (not parser.flac_tags['TRACKTOTAL'] or int(parser.flac_tags['TRACKTOTAL']) == mp3_tags.track_num[1])
     except ImportError:
         return False
 

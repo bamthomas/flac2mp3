@@ -10,7 +10,7 @@ from os.path import dirname, isdir
 from os import makedirs
 import unittest
 import binascii
-import eyeD3
+import eyed3
 
 __author__ = 'bruno thomas'
 
@@ -26,16 +26,15 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
             transcode(flac_file, mp3_file)
 
-            tag = eyeD3.Tag()
-            tag.link(mp3_file)
-            self.assertEquals(u"artist", tag.getArtist())
-            self.assertEquals((1,15), tag.getTrackNum())
-            self.assertEquals(u"album", tag.getAlbum())
-            self.assertEquals(u"title", tag.getTitle())
-            self.assertEquals('description', tag.getComments()[0].comment)
-            self.assertEquals('Electronic', tag.getGenre().getName())
-            self.assertEquals('2008', (tag.getDate()[0]).getYear())
-            self.assertEquals(1, len(tag.getImages()))
+            tag = eyed3.load(mp3_file).tag
+            self.assertEquals(u"artist", tag.artist)
+            self.assertEquals((1,15), tag.track_num)
+            self.assertEquals(u"album", tag.album)
+            self.assertEquals(u"title", tag.title)
+            self.assertEquals('description', tag.comments[0].text)
+            self.assertEquals('Electronic', tag.genre.name)
+            self.assertEquals('2008', str(tag.getBestDate()))
+            self.assertEquals(1, len(tag.images))
 
     def test_target_mp3_exists_flac_is_not_transcoded_again(self):
         with TemporaryDirectory() as tmp, CountingTranscodeCalls() as transcode:
@@ -63,9 +62,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
 
             transcode(flac_file, mp3_file)
 
-            tag = eyeD3.Tag()
-            tag.link(mp3_file)
-            self.assertEquals(1, len(tag.getImages()))
+            tag = eyed3.load(mp3_file).tag
+            self.assertEquals(1, len(tag.images))
             
             tmp_file_pattern = '%s.*\%s' % (CoverFile.tmp_prefix, CoverFile.tmp_suffix)
             self.assertEquals(0, len(set(find_files(tmp_file_pattern, tempfile.gettempdir()))))
@@ -81,15 +79,15 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertTrue(os.path.isfile(mp3_file))
 
     def test_one_file_one_tag(self):
-        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'artist')
-        self.assert_tag_present_in_mp3('getTitle', 'TITLE', 'title')
-        self.assert_tag_present_in_mp3('getAlbum', 'ALBUM', 'album')
+        self.assert_tag_present_in_mp3('artist', 'ARTIST', 'artist')
+        self.assert_tag_present_in_mp3('title', 'TITLE', 'title')
+        self.assert_tag_present_in_mp3('album', 'ALBUM', 'album')
 
     def test_one_file_one_tag_with_bash_special_chars(self):
-        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', '!!! money $ stars * and percentages %')
+        self.assert_tag_present_in_mp3('artist', 'ARTIST', '!!! money $ stars * and percentages %')
 
     def test_one_file_one_tag_with_accent(self):
-        self.assert_tag_present_in_mp3('getArtist', 'ARTIST', 'titre \xc3\xa0 accent'.decode('utf-8'))
+        self.assert_tag_present_in_mp3('artist', 'ARTIST', 'titre \xc3\xa0 accent'.decode('utf-8'))
 
     def test_transcode_without_cover(self):
         with TemporaryDirectory() as tmp:
@@ -155,15 +153,14 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
                 os.chmod(exe_file, stat.S_IXUSR)
                 self.assertEquals(exe_file, which('mywin'))
 
-    def assert_tag_present_in_mp3(self, eyed3_method_name, flac_key, flac_value):
+    def assert_tag_present_in_mp3(self, eyed3_attribute, flac_key, flac_value):
         with TemporaryDirectory() as tmp:
             flac_file = join(tmp, 'tmp.flac')
             mp3_file = join(tmp, 'tmp.mp3')
             self.create_flac_file(flac_file, tags={flac_key: flac_value})
             transcode(flac_file, mp3_file)
-            tag = eyeD3.Tag()
-            tag.link(mp3_file)
-            self.assertEquals(flac_value, getattr(tag, eyed3_method_name)())
+            tag = eyed3.load(mp3_file).tag
+            self.assertEquals(flac_value, getattr(tag, eyed3_attribute))
 
     def create_flac_file(self, flac_file, tags={'ARTIST':'artist', 'TRACKNUMBER': '1', 'TRACKTOTAL': '15', 'ALBUM': 'album', 'TITLE': 'title', 'GENRE': 'Electronic', 'DATE': '2008', 'DESCRIPTION': 'description','COPYRIGHT': 'copyright'}, cover='cover.jpg', embbed=False):
         with open('/tmp/tmp.wav', 'wb') as mp3:
@@ -193,7 +190,8 @@ class TemporaryDirectory(object):
         self.tempdir = tempfile.mkdtemp()
         return self.tempdir
     def __exit__(self, type, value, traceback):
-        shutil.rmtree(self.tempdir, ignore_errors = True)
+        #shutil.rmtree(self.tempdir, ignore_errors = True)
+        pass
 
 class CountingTranscodeCalls(object):
     def __init__(self):
