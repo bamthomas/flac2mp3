@@ -37,13 +37,14 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             self.assertEquals(1, len(tag.images))
 
     def test_target_mp3_exists_flac_is_not_transcoded_again(self):
-        with TemporaryDirectory() as tmp, CountingTranscodeCalls() as transcode:
-            flac_file, mp3_file = self.init_files(tmp)
+        with TemporaryDirectory() as tmp:
+            with CountingTranscodeCalls() as transcode:
+                flac_file, mp3_file = self.init_files(tmp)
 
-            flac2mp3.process_transcoding((flac_file, tmp, tmp))
-            flac2mp3.process_transcoding((flac_file, tmp, tmp))
-
-            self.assertEquals(1, transcode.count())
+                flac2mp3.process_transcoding((flac_file, tmp, tmp))
+                flac2mp3.process_transcoding((flac_file, tmp, tmp))
+    
+                self.assertEquals(1, transcode.count())
 
     def test_target_mp3_exists_with_differents_tags_flac_is_transcoded_again(self):
         with TemporaryDirectory() as tmp:
