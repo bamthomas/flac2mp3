@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/bamthomas/flac2mp3.png)](https://travis-ci.org/bamthomas/flac2mp3])
+[![Build Status](https://travis-ci.org/bamthomas/flac2mp3.png)](https://travis-ci.org/bamthomas/flac2mp3)
 
 # Description
 This is 1 utility scripts (in `src/main`) for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
