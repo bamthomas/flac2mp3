@@ -27,10 +27,10 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
             transcode(flac_file, mp3_file)
 
             tag = eyed3.load(mp3_file).tag
-            self.assertEquals(u"artist", tag.artist)
+            self.assertEquals('artist', tag.artist)
             self.assertEquals((1,15), tag.track_num)
-            self.assertEquals(u"album", tag.album)
-            self.assertEquals(u"title", tag.title)
+            self.assertEquals('album', tag.album)
+            self.assertEquals('title', tag.title)
             self.assertEquals('description', tag.comments[0].text)
             self.assertEquals('Electronic', tag.genre.name)
             self.assertEquals('2008', str(tag.getBestDate()))
