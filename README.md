@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bamthomas/flac2mp3.png)](https://travis-ci.org/bamthomas/flac2mp3])
+
 # Description
 This is 1 utility scripts (in `src/main`) for transcoding flac files into mp3 files keeping covers, tags, and directory structure. It is multithreaded and creates as much thread as the number of cores on the host.
 
@@ -87,9 +89,12 @@ This is a work in progress.
 # Development
 To develop and test, use your favorite IDE (mine is pycharm).
 
-With bash to run the test you can do :
-`$ PYTHONPATH=src/main/:src/test/ python -m unittest flac2mp3_test flac2mp3_acceptance_test`
+With bash, to run the tests you can do :
 
+    $ virtualenv virt_env
+    $ source virt_env/bin/activate
+    $ pip install -r requirements.txt
+    $ nosetests
 # Known issues
 
 * [windows] weird errors when deleting temp cover images embedded in flac files on windows : "WindowsError: [Error 32] The process cannot access the file because it is being used by another process". But the transcoding is ok anyway.
