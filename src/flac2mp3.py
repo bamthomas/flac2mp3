@@ -30,10 +30,7 @@ FILE_SYSTEM_ENCODING = sys.getfilesystemencoding()
 VOBIS_COMMENT = 4
 PICTURE = 6
 
-class none_if_missing(dict):
-    def __missing__(self, _):return None
-
-vobis_comments_lame_opts_map = none_if_missing({
+vobis_comments_lame_opts_map = {
    'ARTIST'     : '--ta',
    'ALBUM'      : '--tl',
    'TITLE'      : '--tt',
@@ -42,7 +39,7 @@ vobis_comments_lame_opts_map = none_if_missing({
    'DATE'       : '--ty',
    'TRACKNUMBER': '--tn',
    'TRACKTOTAL' : 'total'
-})
+}
 
 class VobisCommentParser(object):
     image = None
@@ -90,7 +87,7 @@ class VobisCommentParser(object):
             offset += 4
             comments.append(vobis_comment_block[offset:offset + length])
             offset += length
-        return none_if_missing(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
+        return dict(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
 class CoverFile(object):
     cover_file = None
@@ -121,9 +118,10 @@ class CoverFile(object):
 
 def transcode(flac_file, mp3_file):
     parser = VobisCommentParser().parse(flac_file)
-    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file, parser.flac_tags['TITLE'], parser.flac_tags['ARTIST'], parser.flac_tags['TRACKNUMBER'], parser.flac_tags['TRACKTOTAL'])
+    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file, parser.flac_tags.get('TITLE'),
+                parser.flac_tags.get('ARTIST'), parser.flac_tags.get('TRACKNUMBER'), parser.flac_tags.get('TRACKTOTAL'))
 
-    lame_tags = dict((vobis_comments_lame_opts_map[k], v) for k,v in parser.flac_tags.items())
+    lame_tags = dict((vobis_comments_lame_opts_map.get(k), v) for k,v in parser.flac_tags.items())
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
@@ -158,13 +156,13 @@ def tags_are_equals(flac_file, target_mp3_file):
         parser = VobisCommentParser().parse(flac_file)
 
         return \
-            parser.flac_tags['ARTIST'] == mp3_tags.artist and \
-            parser.flac_tags['ALBUM'] == mp3_tags.album and \
-            parser.flac_tags['TITLE'] == mp3_tags.title and\
-            parser.flac_tags['GENRE'] == mp3_tags.genre.name and \
-            parser.flac_tags['DATE'] == mp3_tags.year and \
-            int(parser.flac_tags['TRACKNUMBER']) == mp3_tags.track_num[0] and \
-            (not parser.flac_tags['TRACKTOTAL'] or int(parser.flac_tags['TRACKTOTAL']) == mp3_tags.track_num[1])
+            parser.flac_tags.get('ARTIST') == mp3_tags.artist and \
+            parser.flac_tags.get('ALBUM') == mp3_tags.album and \
+            parser.flac_tags.get('TITLE') == mp3_tags.title and\
+            parser.flac_tags.get('GENRE') == mp3_tags.genre.name and \
+            parser.flac_tags.get('DATE') == mp3_tags.year and \
+            int(parser.flac_tags.get('TRACKNUMBER')) == mp3_tags.track_num[0] and \
+            (not parser.flac_tags.get('TRACKTOTAL') or int(parser.flac_tags.get('TRACKTOTAL')) == mp3_tags.track_num[1])
     except ImportError:
         return False
 
