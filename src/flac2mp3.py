@@ -31,19 +31,21 @@ VOBIS_COMMENT = 4
 PICTURE = 6
 
 vobis_comments_lame_opts_map = {
-   'ARTIST'     : '--ta',
-   'ALBUM'      : '--tl',
-   'TITLE'      : '--tt',
-   'DESCRIPTION': '--tc',
-   'GENRE'      : '--tg',
-   'DATE'       : '--ty',
-   'TRACKNUMBER': '--tn',
-   'TRACKTOTAL' : 'total'
+    'ARTIST': '--ta',
+    'ALBUM': '--tl',
+    'TITLE': '--tt',
+    'DESCRIPTION': '--tc',
+    'GENRE': '--tg',
+    'DATE': '--ty',
+    'TRACKNUMBER': '--tn',
+    'TRACKTOTAL': 'total'
 }
+
 
 class VobisCommentParser(object):
     image = None
     flac_tags = {}
+
     def parse(self, flac_file):
         with open(flac_file, 'rb') as flac:
             assert 'fLaC' == flac.read(4)
@@ -89,6 +91,7 @@ class VobisCommentParser(object):
             offset += length
         return dict(split_key_value_at_first_equal_and_upper_key(comment) for comment in comments)
 
+
 class CoverFile(object):
     cover_file = None
     image_data = None
@@ -101,7 +104,7 @@ class CoverFile(object):
             self.cover_file = cover_file
         elif image_data:
             self.image_data = image_data
-            _,self.cover_file = mkstemp(prefix=self.tmp_prefix, suffix=self.tmp_suffix)
+            _, self.cover_file = mkstemp(prefix=self.tmp_prefix, suffix=self.tmp_suffix)
 
     def __enter__(self):
         if self.image_data:
@@ -112,16 +115,20 @@ class CoverFile(object):
     def __exit__(self, type, value, traceback):
         if self.image_data: os.remove(self.cover_file)
 
-    def exist(self): return self.cover_file is not None
-    def path(self): return self.cover_file
+    def exist(self):
+        return self.cover_file is not None
+
+    def path(self):
+        return self.cover_file
 
 
 def transcode(flac_file, mp3_file):
     parser = VobisCommentParser().parse(flac_file)
-    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file, parser.flac_tags.get('TITLE'),
+    LOGGER.info('transcoding "%s" with tags (title="%s" artist="%s" track=%s/%s)', flac_file,
+                parser.flac_tags.get('TITLE'),
                 parser.flac_tags.get('ARTIST'), parser.flac_tags.get('TRACKNUMBER'), parser.flac_tags.get('TRACKTOTAL'))
 
-    lame_tags = dict((vobis_comments_lame_opts_map.get(k), v) for k,v in parser.flac_tags.items())
+    lame_tags = dict((vobis_comments_lame_opts_map.get(k), v) for k, v in parser.flac_tags.items())
     if 'total' in lame_tags:
         lame_tags['--tn'] = '%s/%s' % (parser.flac_tags['TRACKNUMBER'], lame_tags.pop('total'))
 
@@ -130,12 +137,13 @@ def transcode(flac_file, mp3_file):
         if cover_file.exist(): lame_tags['--ti'] = cover_file.path()
 
         lame_command_list = LAME_COMMAND.split(' ')
-        lame_command_list.extend(arg for (k,v) in lame_tags.items() if k for arg in (k,v.encode(encoding)))
+        lame_command_list.extend(arg for (k, v) in lame_tags.items() if k for arg in (k, v.encode(encoding)))
         lame_command_list.extend(('-', mp3_file.encode(FILE_SYSTEM_ENCODING)))
 
         flac_command = Popen(('flac', '--totally-silent', '-dc', flac_file.encode(FILE_SYSTEM_ENCODING)), stdout=PIPE)
         lame_command = Popen(lame_command_list, stdin=flac_command.stdout)
         lame_command.wait()
+
 
 def find_files(pattern, *root_dirs):
     regexp = re.compile(pattern)
@@ -144,27 +152,31 @@ def find_files(pattern, *root_dirs):
             for file in files:
                 if regexp.match(file): yield join(root.decode(FILE_SYSTEM_ENCODING), file.decode(FILE_SYSTEM_ENCODING))
 
+
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
     flac_path_relative_to_root = flac_file.replace(flac_root_path, '').replace('.flac', '.mp3')
     if flac_path_relative_to_root.startswith('/'): flac_path_relative_to_root = flac_path_relative_to_root[1:]
     return join(mp3_target_path, flac_path_relative_to_root)
 
+
 def tags_are_equals(flac_file, target_mp3_file):
     try:
         import eyed3
+
         mp3_tags = eyed3.load(target_mp3_file).tag
         parser = VobisCommentParser().parse(flac_file)
 
         return \
             parser.flac_tags.get('ARTIST') == mp3_tags.artist and \
             parser.flac_tags.get('ALBUM') == mp3_tags.album and \
-            parser.flac_tags.get('TITLE') == mp3_tags.title and\
+            parser.flac_tags.get('TITLE') == mp3_tags.title and \
             parser.flac_tags.get('GENRE') == mp3_tags.genre.name and \
             parser.flac_tags.get('DATE') == mp3_tags.year and \
             int(parser.flac_tags.get('TRACKNUMBER')) == mp3_tags.track_num[0] and \
             (not parser.flac_tags.get('TRACKTOTAL') or int(parser.flac_tags.get('TRACKTOTAL')) == mp3_tags.track_num[1])
     except ImportError:
         return False
+
 
 def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
     try:
@@ -181,8 +193,10 @@ def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
     except Exception as e:
         LOGGER.exception('error during the transcoding of %r : %s' % (flac_file, e))
 
+
 def which(program):
-    def is_exe(fpath): return isfile(fpath) and os.access(fpath, os.X_OK)
+    def is_exe(fpath):
+        return isfile(fpath) and os.access(fpath, os.X_OK)
 
     for path in os.environ["PATH"].split(os.pathsep):
         exe_files = os.path.join(path, program), os.path.join(path, program + '.exe')
@@ -190,11 +204,13 @@ def which(program):
             if is_exe(exe_file):
                 return exe_file
 
+
 def get_cpu_count():
     try:
         return multiprocessing.cpu_count()
     except NotImplementedError:
         return 1
+
 
 def run(mp3_target_path, flac_root_path, *flac_path_list):
     flac_files = set(find_files('.*\.flac', *flac_path_list))
@@ -207,15 +223,18 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 
     LOGGER.info('transcoding done, exiting normally')
 
+
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
-    k,v = string_with_equal.split('=', 1)
+    k, v = string_with_equal.split('=', 1)
     # vobis comments are utf-8 http://www.xiph.org/vorbis/doc/v-comment.html
     return k.upper(), v.decode('utf-8')
+
 
 class Usage(Exception):
     def __init__(self, msg, *args, **kwargs):
         super(Usage, self).__init__(*args, **kwargs)
         self.msg = msg
+
 
 def main(argv):
     try:
@@ -247,6 +266,7 @@ def main(argv):
         print >> sys.stderr, err.msg
         print >> sys.stderr, "for help use -h or --help"
         return 2
+
 
 if __name__ == "__main__":
     LOGGER.setLevel(INFO)
