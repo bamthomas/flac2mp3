@@ -1,7 +1,9 @@
 nbproject/
+flac2mp3.egg-info
 Flac2mp3.iml
 .idea
 virt_env
+venv
 *.pyc
 *.iml
 tmp

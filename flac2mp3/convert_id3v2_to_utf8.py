@@ -2,10 +2,12 @@
 
 import sys
 import re
-import eyeD3
-from eyeD3.frames import *;
+import eyed3
+from eyed3.core import Tag
+from eyed3.id3.frames import TextFrame, Frame
 
-tag = eyeD3.Tag()
+tag = Tag()
+
 
 class TextFrameWithUtf8Encoding(Frame):
   def __init__(self, textFrame):
@@ -20,14 +22,14 @@ class TextFrameWithUtf8Encoding(Frame):
     return self.textFrame.assembleFrame(data);
 
 if len(sys.argv) != 2:
-  print "usage : " + sys.argv[0] + " <mp3_file>";
-  sys.exit(1);
+  print("usage : " + sys.argv[0] + " <mp3_file>")
+  sys.exit(1)
 
 tag.link(sys.argv[1])
 
 for i in range(0, len(tag.frames)):
-  frame=tag.frames[i];
+  frame=tag.frames[i]
   if frame.__class__ == TextFrame:
-    tag.frames[i] = TextFrameWithUtf8Encoding(frame);
+    tag.frames[i] = TextFrameWithUtf8Encoding(frame)
 
 tag.update()

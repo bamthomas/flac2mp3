@@ -1,7 +1,8 @@
 import stat
 import tempfile
-from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile
-import flac2mp3
+import unittest
+
+from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile, process_transcoding
 import os
 from os.path import join
 import subprocess
@@ -13,7 +14,8 @@ from nose.tools import assert_equals, ok_
 
 __author__ = 'bruno thomas'
 
-class TestFlac2Mp3Acceptance(object):
+
+class TestFlac2Mp3Acceptance(unittest.TestCase):
     def init_files(self, tmp, embbed=False):
         flac_file = join(tmp, 'tmp.flac')
         self.create_flac_file(flac_file, embbed=embbed)
@@ -40,8 +42,8 @@ class TestFlac2Mp3Acceptance(object):
             with CountingTranscodeCalls() as transcode:
                 flac_file, mp3_file = self.init_files(tmp)
 
-                flac2mp3.process_transcoding((flac_file, tmp, tmp))
-                flac2mp3.process_transcoding((flac_file, tmp, tmp))
+                process_transcoding((flac_file, tmp, tmp))
+                process_transcoding((flac_file, tmp, tmp))
 
                 assert_equals(1, transcode.count())
 
@@ -50,10 +52,10 @@ class TestFlac2Mp3Acceptance(object):
             with CountingTranscodeCalls() as transcode:
                 flac_file, mp3_file = self.init_files(tmp)
 
-                flac2mp3.process_transcoding((flac_file, tmp, tmp))
+                process_transcoding((flac_file, tmp, tmp))
 
                 self.create_flac_file(flac_file, tags={'ARTIST': u'artist'})
-                flac2mp3.process_transcoding((flac_file, tmp, tmp))
+                process_transcoding((flac_file, tmp, tmp))
 
                 assert_equals(2, transcode.count())
 
@@ -88,7 +90,7 @@ class TestFlac2Mp3Acceptance(object):
         self.assert_tag_present_in_mp3('artist', 'ARTIST', '!!! money $ stars * and percentages %')
 
     def test_one_file_one_tag_with_accent(self):
-        self.assert_tag_present_in_mp3('artist', 'ARTIST', 'titre \xc3\xa0 accent'.decode('utf-8'))
+        self.assert_tag_present_in_mp3('artist', 'ARTIST', b'titre \xc3\xa0 accent'.decode('utf-8'))
 
     def test_transcode_without_cover(self):
         with TemporaryDirectory() as tmp:
@@ -135,11 +137,11 @@ class TestFlac2Mp3Acceptance(object):
 
     def test_convert_tree_with_accents(self):
         with TemporaryDirectory() as tmp:
-            self.create_flac_file(join(tmp, '\xc3\xa9\xc3\xa8\xc3\xa0.flac'.decode('utf-8')))
+            self.create_flac_file(join(tmp, b'\xc3\xa9\xc3\xa8\xc3\xa0.flac'.decode('utf-8')))
 
             run(tmp, tmp, tmp)
 
-            ok_(os.path.isfile(join(tmp, '\xc3\xa9\xc3\xa8\xc3\xa0.mp3'.decode('utf-8'))))
+            ok_(os.path.isfile(join(tmp, b'\xc3\xa9\xc3\xa8\xc3\xa0.mp3'.decode('utf-8'))))
 
     def test_which(self):
         assert_equals('/bin/ls', which('ls'))
@@ -168,14 +170,14 @@ class TestFlac2Mp3Acceptance(object):
             mp3.write(binascii.a2b_hex("524946462408000057415645666d7420100000000100020022560000885801000400100064617461000800000000000024171ef33c133c1416f918f934e723a63cf224f211ce1a0d"))
 
         command_tags = list()
-        for (k,v) in tags.iteritems():
+        for k, v in tags.items():
             command_tags.append('-T')
-            command_tags.append('%s=%s' % (k,v))
+            command_tags.append('%s=%s' % (k, v))
         cover_path = None
         if cover:
             cover_path = join(dirname(flac_file), cover)
             with open(cover_path, 'w') as jpg:
-                jpg.write(binascii.a2b_hex('FFD8FFE000104A464946'))
+                jpg.write('FFD8FFE000104A464946')
             if embbed:
                 command_tags.append('--picture=|image/jpeg||1x1x24/173|%s' % cover_path)
 
@@ -193,20 +195,23 @@ class TemporaryDirectory(object):
             os.makedirs(directory)
         self.tempdir = tempfile.mkdtemp(dir=directory)
         return self.tempdir
+
     def __exit__(self, type, value, traceback):
         #shutil.rmtree(self.tempdir, ignore_errors = True)
         pass
 
+
 class CountingTranscodeCalls(object):
     def __init__(self):
         self.nb_transcode = [0]
+
     def __enter__(self):
-        self.transcode_func = flac2mp3.transcode
-        flac2mp3.transcode = self.transcode_and_count
+        self.transcode_func = transcode
+        __init__.transcode = self.transcode_and_count
         return self
 
     def __exit__(self, type, value, traceback):
-        flac2mp3.transcode = self.transcode_func
+        __init__.transcode = self.transcode_func
 
     def transcode_and_count(self, flac_file, mp3_file):
         self.transcode_func(flac_file, mp3_file)

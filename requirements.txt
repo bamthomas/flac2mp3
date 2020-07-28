@@ -1,4 +1,0 @@
-eyeD3
-nose
-tdaemon
-argparse

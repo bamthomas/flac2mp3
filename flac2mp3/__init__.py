@@ -56,8 +56,8 @@ class VobisCommentParser(object):
             while not last_block:
                 last_block_and_block_type = flac.read(1)
                 block_type = ord(last_block_and_block_type) & 0x07
-                last_block = ord(last_block_and_block_type) & 0x80 is 0x80
-                block_length, = unpack('>i', '\x00' + flac.read(3))
+                last_block = ord(last_block_and_block_type) & 0x80 == 0x80
+                block_length, = unpack('>i', b'\x00' + flac.read(3))
                 block = flac.read(int(block_length))
                 if block_type is VOBIS_COMMENT:
                     self.flac_tags = self.get_flac_tags(block)
@@ -150,7 +150,8 @@ def find_files(pattern, *root_dirs):
     for root_dir in root_dirs:
         for root, _, files in os.walk(root_dir):
             for file in files:
-                if regexp.match(file): yield join(root.decode(FILE_SYSTEM_ENCODING), file.decode(FILE_SYSTEM_ENCODING))
+                if regexp.match(file):
+                    yield join(root, file)
 
 
 def get_mp3_filename(mp3_target_path, flac_root_path, flac_file):
@@ -178,7 +179,8 @@ def tags_are_equals(flac_file, target_mp3_file):
         return False
 
 
-def process_transcoding((flac_file, flac_root_path, mp3_target_path)):
+def process_transcoding(params):
+    flac_file, flac_root_path, mp3_target_path = params
     try:
         target_mp3_file = get_mp3_filename(mp3_target_path, flac_root_path, flac_file)
         if not isdir(dirname(target_mp3_file)):
@@ -225,14 +227,14 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 
 
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
-    k, v = string_with_equal.split('=', 1)
+    k, v = string_with_equal.split(b'=', 1)
     # vobis comments are utf-8 http://www.xiph.org/vorbis/doc/v-comment.html
     return k.upper(), v.decode('utf-8')
 
 
 class Usage(Exception):
     def __init__(self, msg, *args, **kwargs):
-        super(Usage, self).__init__(*args, **kwargs)
+        super(Usage, self).__init__(args, kwargs)
         self.msg = msg
 
 
@@ -240,12 +242,12 @@ def main(argv):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "h", ["help"])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
 
         for opt, arg in opts:
             if opt in ("-h", "--help"):
-                print __doc__
+                print(__doc__)
                 return 0
 
         if args:
@@ -262,9 +264,8 @@ def main(argv):
 
         run(mp3_target_path, os.getcwd(), *args)
         return 0
-    except Usage, err:
-        print >> sys.stderr, err.msg
-        print >> sys.stderr, "for help use -h or --help"
+    except Usage as err:
+        print("for help use -h or --help", err)
         return 2
 
 
