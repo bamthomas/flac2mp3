@@ -48,7 +48,7 @@ class VobisCommentParser(object):
 
     def parse(self, flac_file):
         with open(flac_file, 'rb') as flac:
-            assert 'fLaC' == flac.read(4)
+            assert b'fLaC' == flac.read(4)
 
             last_block = False
             block_type = 0
@@ -229,7 +229,7 @@ def run(mp3_target_path, flac_root_path, *flac_path_list):
 def split_key_value_at_first_equal_and_upper_key(string_with_equal):
     k, v = string_with_equal.split(b'=', 1)
     # vobis comments are utf-8 http://www.xiph.org/vorbis/doc/v-comment.html
-    return k.upper(), v.decode('utf-8')
+    return k.decode('utf-8').upper(), v.decode('utf-8')
 
 
 class Usage(Exception):

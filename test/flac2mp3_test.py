@@ -11,25 +11,24 @@ class TestFlac2Mp3(unittest.TestCase):
 
     def test_get_flac_tags_one_comment(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(1) + encode(b'TITRE=titre'))
-        self.assertEqual({b"TITRE": "titre"}, tags)
+        self.assertEqual({'TITRE': 'titre'}, tags)
 
     def test_get_flac_tags_two_comments_with_upper_and_lower_case(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode(b'TiTrE=titre') + encode(b'album=album'))
-        self.assertEqual({b"TITRE": "titre", b"ALBUM": "album"}, tags)
+        self.assertEqual({'TITRE': 'titre', 'ALBUM': 'album'}, tags)
 
     def test_get_flac_tags_two_comments_with_equal_sign_in_value(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode(b'TiTrE=e=mc2') + encode(b'album=album'))
-        self.assertEqual({b"TITRE": "e=mc2", b"ALBUM": "album"}, tags)
+        self.assertEqual({'TITRE': 'e=mc2', 'ALBUM': 'album'}, tags)
 
     def test_get_flac_tags_unicode_strings_for_artist_album_title(self):
-            tags = VobisCommentParser().get_flac_tags(vobis_block_header(3) + encode('title=à'.encode()) + encode("album=bé".encode()) + encode('artist=cè'.encode()))
-            self.assertEqual({b"TITLE": "à", b"ALBUM": "bé", b'ARTIST': 'cè'}, tags)
+            tags = VobisCommentParser().get_flac_tags(vobis_block_header(3) + encode('title=à'.encode()) + encode('album=bé'.encode()) + encode('artist=cè'.encode()))
+            self.assertEqual({'TITLE': 'à', 'ALBUM': 'bé', 'ARTIST': 'cè'}, tags)
 
     def test_get_flac_tags_two_comments_with_carriage_return(self):
         tags = VobisCommentParser().get_flac_tags(vobis_block_header(2) + encode(
-            "DESCRIPTION=Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino".encode()) + encode(
-            b"TITRE=titre"))
-        self.assertEqual({b"DESCRIPTION": "Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino", b"TITRE" : "titre"}, tags)
+            'DESCRIPTION=Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino'.encode()) + encode('TITRE=titre'.encode()))
+        self.assertEqual({'DESCRIPTION': 'Interprètes : Hot Chip, interprète\r\nLabel : Domino Recording Co - Domino', 'TITRE' : 'titre'}, tags)
 
     def test_get_cpu_count(self):
         def raise_NotImplementedError(): raise NotImplementedError

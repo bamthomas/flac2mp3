@@ -2,6 +2,7 @@ import stat
 import tempfile
 import unittest
 
+import flac2mp3
 from flac2mp3 import find_files, run, transcode, which, VobisCommentParser, CoverFile, process_transcoding
 import os
 from os.path import join
@@ -176,8 +177,8 @@ class TestFlac2Mp3Acceptance(unittest.TestCase):
         cover_path = None
         if cover:
             cover_path = join(dirname(flac_file), cover)
-            with open(cover_path, 'w') as jpg:
-                jpg.write('FFD8FFE000104A464946')
+            with open(cover_path, 'wb') as jpg:
+                jpg.write(binascii.unhexlify('FFD8FFE000104A464946'))
             if embbed:
                 command_tags.append('--picture=|image/jpeg||1x1x24/173|%s' % cover_path)
 
@@ -207,11 +208,11 @@ class CountingTranscodeCalls(object):
 
     def __enter__(self):
         self.transcode_func = transcode
-        __init__.transcode = self.transcode_and_count
+        flac2mp3.transcode = self.transcode_and_count
         return self
 
     def __exit__(self, type, value, traceback):
-        __init__.transcode = self.transcode_func
+        flac2mp3.transcode = self.transcode_func
 
     def transcode_and_count(self, flac_file, mp3_file):
         self.transcode_func(flac_file, mp3_file)
