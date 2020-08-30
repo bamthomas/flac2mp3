@@ -138,6 +138,12 @@ With bash, to run the tests you can do :
     $ pip install -e ".[dev]"
     $ nosetests
 
+To release :
+
+::
+
+    $ python setup.py sdist bdist_egg upload
+
 Known issues
 ============
 
