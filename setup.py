@@ -19,12 +19,13 @@ install_requires = [
 
 tests_require = [
     'nose==1.3.7',
-    'eyeD3==0.9.5'
+    'eyeD3==0.9.5',
+    'bumpversion==0.5.3'
 ]
 
 setup(
     name=NAME,
-    version='0.6',
+    version='0.6.0',
     description='Python flac2mp3 transcoding script',
     long_description=README,
     classifiers=[
