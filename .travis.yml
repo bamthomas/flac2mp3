@@ -4,7 +4,6 @@ python:
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq lame flac
- - sudo rmdir /dev/shm
- - sudo ln -Tsf /{run,dev}/shm
+
 install: 'pip install -e ".dev"'
 script: nosetests
