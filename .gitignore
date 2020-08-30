@@ -7,3 +7,5 @@ venv
 *.pyc
 *.iml
 tmp
+build
+dist
