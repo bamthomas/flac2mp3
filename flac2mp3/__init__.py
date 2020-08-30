@@ -238,10 +238,10 @@ class Usage(Exception):
         self.msg = msg
 
 
-def main(argv):
+def main():
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "h", ["help"])
+            opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
         except getopt.error as msg:
             raise Usage(msg)
 
@@ -271,4 +271,4 @@ def main(argv):
 
 if __name__ == "__main__":
     LOGGER.setLevel(INFO)
-    sys.exit(main(sys.argv))
+    sys.exit(main())
