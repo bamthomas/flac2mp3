@@ -24,7 +24,7 @@ tests_require = [
 
 setup(
     name=NAME,
-    version='0.5',
+    version='0.6',
     description='Python flac2mp3 transcoding script',
     long_description=README,
     classifiers=[
