@@ -5,8 +5,8 @@ from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 py_version = sys.version_info[:2]
-if py_version < (3, 5):
-    raise Exception("flac2mp3 requires Python >= 3.5.")
+if py_version < (3, 6):
+    raise Exception("flac2mp3 requires Python >= 3.6.")
 
 with open(os.path.join(here, 'README.rst')) as readme:
     README = readme.read()
